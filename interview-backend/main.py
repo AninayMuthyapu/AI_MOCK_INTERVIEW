@@ -21,6 +21,11 @@ from voice_service import VoiceService
 from avatar_service import AvatarService
 from vision_service import VisionService
 
+# Logging setup
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 # Load environment variables
 load_dotenv()
 API_KEY = os.getenv("GOOGLE_API_KEY")
@@ -60,9 +65,28 @@ model = genai.GenerativeModel(
 )
 
 app = FastAPI()
-voice_service = VoiceService()
-avatar_service = AvatarService()
-vision_service = VisionService()
+
+# Initialize services with error handling
+try:
+    voice_service = VoiceService()
+    logger.info("Voice service initialized successfully")
+except Exception as e:
+    logger.warning(f"Voice service initialization failed: {e}")
+    voice_service = None
+
+try:
+    avatar_service = AvatarService()
+    logger.info("Avatar service initialized successfully")
+except Exception as e:
+    logger.warning(f"Avatar service initialization failed: {e}")
+    avatar_service = None
+
+try:
+    vision_service = VisionService()
+    logger.info("Vision service initialized successfully")
+except Exception as e:
+    logger.warning(f"Vision service initialization failed: {e}")
+    vision_service = None
 
 # Loosen CORS for local development including IDE/browser preview proxies
 app.add_middleware(
@@ -635,15 +659,24 @@ Focus on:
             if not response.text:
                 raise ValueError("Empty response from model")
             
-            # Extract JSON from response
+            # Extract JSON from response robustly (handles code fences and prose)
             raw = response.text.strip()
+            # Strip markdown code fences if present
+            if raw.startswith("```"):
+                first_nl = raw.find("\n")
+                if first_nl != -1:
+                    raw = raw[first_nl + 1:]
+                if raw.endswith("```"):
+                    raw = raw[:-3]
+            raw = raw.strip()
+            
+            # Find first JSON object
             start = raw.find('{')
             end = raw.rfind('}') + 1
-            if start >= 0 and end > start:
-                json_str = raw[start:end]
-                result = json.loads(json_str)
-            else:
+            if start < 0 or end <= start:
                 raise ValueError("No JSON found in response")
+            json_str = raw[start:end]
+            result = json.loads(json_str)
             
             return ATSReviewResponse(
                 ats_score=result.get("ats_score", 60),
@@ -654,7 +687,7 @@ Focus on:
                 overall_feedback=result.get("overall_feedback", "Resume needs improvement for better ATS compatibility.")
             )
         except Exception as e:
-            print(f"Error in ATS review: {e}")
+            logger.error(f"Error in ATS review: {e}")
             # Fallback response
             return ATSReviewResponse(
                 ats_score=65,
@@ -944,38 +977,34 @@ async def get_interview_summary(session_id: str):
 
 
 @app.post("/api/tts")
-async def tts(req: TTSRequest):
+async def tts(tts_request: TTSRequest):
     """Convert text to speech using ElevenLabs and return audio/mpeg bytes."""
+    if not voice_service:
+        raise HTTPException(
+            status_code=503,
+            detail="Voice service is not available. Please check your configuration."
+        )
+    
     try:
-        audio_bytes = voice_service.text_to_speech(req.text, req.voice)
-        return Response(content=audio_bytes, media_type="audio/mpeg")
-    except HTTPException as he:
-        # Graceful fallback when ElevenLabs refuses free-tier/abuse or auth issues
-        detail = getattr(he, "detail", None)
-        detail_str = str(detail).lower()
-        if (
-            "detected_unusual_activity" in detail_str
-            or "unauthorized" in detail_str
-            or "401" in detail_str
-            or "403" in detail_str
-        ):
-            return {
-                "fallback": "client_tts",
-                "reason": "elevenlabs_unavailable",
-                "message": "Using client-side TTS due to ElevenLabs restriction",
-                "text": req.text,
-                "voice": req.voice,
-            }
-        # For other TTS failures, surface a structured fallback as well
+        audio_data = voice_service.text_to_speech(tts_request.text, tts_request.voice)
+        if not audio_data:
+            raise HTTPException(
+                status_code=503,
+                detail="Voice synthesis failed. The service might be unavailable or misconfigured."
+            )
+        return Response(content=audio_data, media_type="audio/mpeg")
+    except HTTPException as http_err:
+        # Re-raise HTTP exceptions
+        raise http_err
+    except Exception as e:
+        # For other TTS failures, surface a structured fallback
         return {
             "fallback": "client_tts",
             "reason": "tts_error",
             "message": "Using client-side TTS due to server TTS error",
-            "text": req.text,
-            "voice": req.voice,
+            "text": tts_request.text,
+            "voice": tts_request.voice,
         }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/api/ats-review", response_model=ATSReviewResponse)
@@ -1014,12 +1043,15 @@ async def ats_review(
     except HTTPException:
         raise
     except Exception as e:
+        print(f"Error in ats_review: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error processing resume: {str(e)}")
     finally:
         # Clean up temporary file
-        try:
-            os.remove(file_path)
-        except:
+        if 'file_path' in locals() and os.path.exists(file_path):
+            try:
+                os.remove(file_path)
+            except Exception as e:
+                print(f"Warning: Could not delete temporary file {file_path}: {str(e)}")
             pass
 
 
