@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
 import { useVoice } from "@/contexts/VoiceContext";
+import { API_BASE } from "@/app/lib/api";
 
 export default function VoiceToggle() {
   const { settings, setEnabled, setVoice } = useVoice();
@@ -14,7 +15,7 @@ export default function VoiceToggle() {
   useEffect(() => {
     let mounted = true;
     setLoading(true);
-    fetch("http://localhost:8000/api/voices")
+    fetch(`${API_BASE}/api/voices`)
       .then((r) => (r.ok ? r.json() : {}))
       .then((data: unknown) => {
         if (mounted && data && typeof data === "object" && !Array.isArray(data)) {

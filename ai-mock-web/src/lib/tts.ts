@@ -2,11 +2,13 @@ export type TTSOptions = {
   voice?: string; // elevenlabs voice key/id or browser voice name
 };
 
+import { API_BASE } from "@/app/lib/api";
+
 export async function speak(text: string, options: TTSOptions = {}): Promise<void> {
   const voice = options.voice ?? "rachel";
 
   try {
-    const res = await fetch("http://localhost:8000/api/tts", {
+    const res = await fetch(`${API_BASE}/api/tts`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text, voice }),
