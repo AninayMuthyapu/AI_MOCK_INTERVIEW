@@ -2,6 +2,35 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+type SpeechRecognitionResultLike = {
+  isFinal?: boolean;
+  0?: { transcript?: string };
+};
+
+type SpeechRecognitionEventLike = {
+  resultIndex?: number;
+  results?: ArrayLike<SpeechRecognitionResultLike>;
+};
+
+type SpeechRecognitionErrorEventLike = {
+  error?: string;
+};
+
+type SpeechRecognitionLike = {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  maxAlternatives: number;
+  onstart: null | (() => void);
+  onend: null | (() => void);
+  onresult: null | ((event: unknown) => void);
+  onerror: null | ((event: unknown) => void);
+  start: () => void;
+  stop: () => void;
+};
+
+type SpeechRecognitionCtor = new () => SpeechRecognitionLike;
+
 interface UseSTTReturn {
   transcript: string;
   isListening: boolean;
@@ -18,18 +47,21 @@ export function useSTT(): UseSTTReturn {
   const [isSupported, setIsSupported] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<unknown>(null);
 
   useEffect(() => {
     // Check if speech recognition is supported
     if (typeof window !== 'undefined') {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      const SpeechRecognition =
+        (window as unknown as { SpeechRecognition?: unknown }).SpeechRecognition ||
+        (window as unknown as { webkitSpeechRecognition?: unknown }).webkitSpeechRecognition;
       
       if (SpeechRecognition) {
         setIsSupported(true);
         
         // Initialize recognition
-        const recognition = new SpeechRecognition();
+        const RecognitionCtor = SpeechRecognition as SpeechRecognitionCtor;
+        const recognition = new RecognitionCtor();
         recognition.continuous = true; // Keep listening
         recognition.interimResults = true; // Get interim results
         recognition.lang = 'en-US';
@@ -41,16 +73,21 @@ export function useSTT(): UseSTTReturn {
           setError(null);
         };
 
-        recognition.onresult = (event: any) => {
+        recognition.onresult = (event: unknown) => {
           let finalTranscript = '';
-          let interimTranscript = '';
+          const maybeEvent = event as SpeechRecognitionEventLike;
+          const resultIndex = typeof maybeEvent.resultIndex === "number" ? maybeEvent.resultIndex : 0;
+          const results = maybeEvent.results;
 
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            const transcriptPart = event.results[i][0].transcript;
-            if (event.results[i].isFinal) {
+          if (!results || typeof results.length !== "number") {
+            return;
+          }
+
+          for (let i = resultIndex; i < results.length; i++) {
+            const transcriptPart = results[i]?.[0]?.transcript;
+            if (typeof transcriptPart !== "string") continue;
+            if (results[i]?.isFinal) {
               finalTranscript += transcriptPart + ' ';
-            } else {
-              interimTranscript += transcriptPart;
             }
           }
 
@@ -60,19 +97,21 @@ export function useSTT(): UseSTTReturn {
           }
         };
 
-        recognition.onerror = (event: any) => {
+        recognition.onerror = (event: unknown) => {
+          const maybeError = event as SpeechRecognitionErrorEventLike;
+          const errorCode = typeof maybeError.error === "string" ? maybeError.error : "unknown";
           // Network errors are common and usually harmless - just means STT unavailable
-          if (event.error === 'network') {
+          if (errorCode === 'network') {
             console.warn('Speech recognition unavailable (network error). You can still type your answers.');
             setError('Speech recognition unavailable. Please type your answer.');
           } else {
-            console.error('Speech recognition error:', event.error);
-            setError(`Speech recognition error: ${event.error}`);
+            console.error('Speech recognition error:', errorCode);
+            setError(`Speech recognition error: ${errorCode}`);
           }
           setIsListening(false);
           
           // Auto-restart on some errors
-          if (event.error === 'no-speech' || event.error === 'audio-capture') {
+          if (errorCode === 'no-speech' || errorCode === 'audio-capture') {
             // Don't auto-restart, let user manually restart
           }
         };
@@ -88,7 +127,7 @@ export function useSTT(): UseSTTReturn {
     return () => {
       if (recognitionRef.current) {
         try {
-          recognitionRef.current.stop();
+          (recognitionRef.current as SpeechRecognitionLike).stop();
         } catch (e) {
           // Ignore errors on cleanup
         }
@@ -97,17 +136,19 @@ export function useSTT(): UseSTTReturn {
   }, []);
 
   const startListening = useCallback(() => {
-    if (!isSupported || !recognitionRef.current) {
+    const recognition = recognitionRef.current as { start?: () => void } | null;
+    if (!isSupported || !recognition?.start) {
       setError('Speech recognition is not supported in this browser');
       return;
     }
 
     try {
       setError(null);
-      recognitionRef.current.start();
-    } catch (e: any) {
+      recognition.start();
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "";
       // If already started, ignore
-      if (e.message && e.message.includes('already started')) {
+      if (message.includes('already started')) {
         setIsListening(true);
       } else {
         setError('Failed to start speech recognition');
@@ -119,7 +160,7 @@ export function useSTT(): UseSTTReturn {
   const stopListening = useCallback(() => {
     if (recognitionRef.current && isListening) {
       try {
-        recognitionRef.current.stop();
+        (recognitionRef.current as SpeechRecognitionLike).stop();
       } catch (e) {
         console.error('Stop listening error:', e);
       }

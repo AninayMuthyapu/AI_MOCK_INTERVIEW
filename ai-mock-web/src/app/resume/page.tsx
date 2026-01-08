@@ -97,8 +97,14 @@ export default function ResumeUploadPage() {
       }
       const data = await res.json();
       setPlanPreview(data);
-    } catch (e: any) {
-      setError(e.message || 'Failed to preview plan.');
+    } catch (e: unknown) {
+      const message =
+        e instanceof Error
+          ? e.message
+          : typeof e === "string"
+            ? e
+            : "Failed to preview plan.";
+      setError(message);
     } finally {
       setIsPreviewLoading(false);
     }
@@ -129,8 +135,14 @@ export default function ResumeUploadPage() {
       const data = await res.json();
       setAtsReview(data);
       setShowAtsReview(true);
-    } catch (e: any) {
-      setError(e.message || 'Failed to analyze resume.');
+    } catch (e: unknown) {
+      const message =
+        e instanceof Error
+          ? e.message
+          : typeof e === "string"
+            ? e
+            : "Failed to analyze resume.";
+      setError(message);
     } finally {
       setIsAtsLoading(false);
     }

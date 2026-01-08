@@ -46,8 +46,14 @@ export default function InterviewSummary({ sessionId, onNewInterview }: Intervie
         if (data.overall_feedback) {
           speakIfEnabled(`Interview Complete! ${data.overall_feedback}`);
         }
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error
+            ? err.message
+            : typeof err === "string"
+              ? err
+              : "Failed to fetch interview summary";
+        setError(message);
       } finally {
         setLoading(false);
       }
@@ -104,7 +110,7 @@ export default function InterviewSummary({ sessionId, onNewInterview }: Intervie
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-green-600 mb-2">🎉 Interview Complete!</h1>
-          <p className="text-gray-600">Here's your comprehensive performance summary</p>
+          <p className="text-gray-600">Here&apos;s your comprehensive performance summary</p>
         </div>
 
         {/* Overall Score */}

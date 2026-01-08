@@ -431,9 +431,15 @@ export default function InterviewPage() {
 
       const data = await response.json();
       updateQuestionState(data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error submitting answer:", err);
-      setError(err.message);
+      const message =
+        err instanceof Error
+          ? err.message
+          : typeof err === "string"
+            ? err
+            : "Failed to submit answer.";
+      setError(message);
     } finally {
       setIsLoading(false);
     }
