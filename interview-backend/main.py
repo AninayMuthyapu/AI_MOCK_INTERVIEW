@@ -101,6 +101,72 @@ app.add_middleware(
 session_data: Dict[str, Any] = {}
 sessions: Dict[str, Any] = {}  # New session storage for comprehensive tracking
 
+# Token tracking for AI usage
+class TokenTracker:
+    """Tracks Gemini API token usage globally and per session."""
+    
+    def __init__(self):
+        self.global_input_tokens = 0
+        self.global_output_tokens = 0
+        self.global_total_tokens = 0
+        self.api_calls = 0
+        self.session_tokens: Dict[str, Dict[str, int]] = {}
+    
+    def track(self, response, session_id: str = None) -> Dict[str, int]:
+        """Extract token usage from a Gemini response and track it."""
+        usage = {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0}
+        
+        try:
+            # Gemini API returns usage_metadata with token counts
+            if hasattr(response, 'usage_metadata'):
+                metadata = response.usage_metadata
+                usage["input_tokens"] = getattr(metadata, 'prompt_token_count', 0) or 0
+                usage["output_tokens"] = getattr(metadata, 'candidates_token_count', 0) or 0
+                usage["total_tokens"] = getattr(metadata, 'total_token_count', 0) or 0
+                
+                # Update global counts
+                self.global_input_tokens += usage["input_tokens"]
+                self.global_output_tokens += usage["output_tokens"]
+                self.global_total_tokens += usage["total_tokens"]
+                self.api_calls += 1
+                
+                # Update session-specific counts
+                if session_id:
+                    if session_id not in self.session_tokens:
+                        self.session_tokens[session_id] = {
+                            "input_tokens": 0, "output_tokens": 0, 
+                            "total_tokens": 0, "api_calls": 0
+                        }
+                    self.session_tokens[session_id]["input_tokens"] += usage["input_tokens"]
+                    self.session_tokens[session_id]["output_tokens"] += usage["output_tokens"]
+                    self.session_tokens[session_id]["total_tokens"] += usage["total_tokens"]
+                    self.session_tokens[session_id]["api_calls"] += 1
+                
+                logger.debug(f"Token usage: {usage}")
+        except Exception as e:
+            logger.warning(f"Failed to extract token usage: {e}")
+        
+        return usage
+    
+    def get_global_stats(self) -> Dict[str, int]:
+        """Get global token usage statistics."""
+        return {
+            "input_tokens": self.global_input_tokens,
+            "output_tokens": self.global_output_tokens,
+            "total_tokens": self.global_total_tokens,
+            "api_calls": self.api_calls
+        }
+    
+    def get_session_stats(self, session_id: str) -> Dict[str, int]:
+        """Get token usage for a specific session."""
+        return self.session_tokens.get(session_id, {
+            "input_tokens": 0, "output_tokens": 0, 
+            "total_tokens": 0, "api_calls": 0
+        })
+
+# Global token tracker instance
+token_tracker = TokenTracker()
+
 # Ensure static directories exist and mount static files for serving generated avatar videos
 BASE_DIR = os.path.dirname(__file__)
 STATIC_DIR = os.path.join(BASE_DIR, "static")
@@ -327,6 +393,7 @@ Vary rounds based on company culture. Token: {nonce}"""
                     max_output_tokens=2000
                 )
             )
+            token_tracker.track(response)  # Track token usage
             raw = (response.text or "").strip()
             # Extract JSON array from response
             start = raw.find('[')
@@ -480,6 +547,7 @@ Vary rounds based on company culture. Token: {nonce}"""
                     max_output_tokens=150
                 )
             )
+            token_tracker.track(response)  # Track token usage
             
             question_text = response.text.strip().replace('```', '').replace('"', '').strip()
             return QuestionResponse(question=question_text, type="behavioral")
@@ -543,6 +611,7 @@ Vary rounds based on company culture. Token: {nonce}"""
                     max_output_tokens=300
                 )
             )
+            token_tracker.track(response)  # Track token usage
             raw = response.text.strip()
             # Extract JSON from response
             start = raw.find('{')
@@ -1124,6 +1193,28 @@ async def get_current_session():
     # For now, return 404 since we don't have persistent session storage
     # In a real app, you'd check session storage/database
     raise HTTPException(status_code=404, detail="No active session")
+
+
+@app.get("/api/token-stats/{session_id}")
+async def get_token_stats(session_id: str):
+    """
+    Get AI token usage statistics for a session.
+    Returns input tokens, output tokens, total tokens, and API call count.
+    """
+    session_stats = token_tracker.get_session_stats(session_id)
+    global_stats = token_tracker.get_global_stats()
+    
+    return {
+        "session": session_stats,
+        "global": global_stats,
+        "session_id": session_id
+    }
+
+
+@app.get("/api/token-stats")
+async def get_global_token_stats():
+    """Get global AI token usage statistics across all sessions."""
+    return token_tracker.get_global_stats()
 
 
 @app.get("/api/interview-summary/{session_id}", response_model=InterviewSummaryResponse)

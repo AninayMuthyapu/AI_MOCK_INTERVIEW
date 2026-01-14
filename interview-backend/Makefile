@@ -23,9 +23,14 @@ help:
 install:
 	@echo "📦 Setting up virtual environment..."
 	@test -d venv || python3 -m venv venv
+	@echo "📦 Upgrading pip and setuptools..."
+	@./venv/bin/pip install -q --upgrade pip setuptools wheel
 	@echo "📦 Installing dependencies..."
 	@./venv/bin/pip install -q -r requirements.txt
 	@echo "✅ Installation complete!"
+	@echo ""
+	@echo "Python: $$(./venv/bin/python --version)"
+	@echo "Environment: ./venv"
 
 # Run production server
 run: install

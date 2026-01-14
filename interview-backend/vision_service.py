@@ -5,26 +5,55 @@ Displays metrics, feedback, and visual indicators directly on video feed
 
 import cv2
 import numpy as np
-import mediapipe as mp
 import time
 import base64
 from typing import Dict, Tuple
+import logging
+
+logger = logging.getLogger(__name__)
+
+# Try to import mediapipe with fallback for different versions
+MEDIAPIPE_AVAILABLE = False
+MEDIAPIPE_LEGACY = False
+
+try:
+    import mediapipe as mp
+    # Check if legacy solutions API is available
+    if hasattr(mp, 'solutions') and hasattr(mp.solutions, 'holistic'):
+        MEDIAPIPE_AVAILABLE = True
+        MEDIAPIPE_LEGACY = True
+        logger.info("mediapipe loaded with legacy solutions API")
+    else:
+        # New version without solutions - we'll use a simplified fallback
+        logger.warning("mediapipe loaded but solutions API not available - using basic mode")
+        MEDIAPIPE_AVAILABLE = False
+except ImportError:
+    logger.warning("mediapipe not installed - vision analysis disabled")
 
 class VisionService:
     def __init__(self):
-        self.mp_holistic = mp.solutions.holistic
-        self.mp_drawing = mp.solutions.drawing_utils
-        self.mp_drawing_styles = mp.solutions.drawing_styles
-        
-        self.holistic = self.mp_holistic.Holistic(
-            static_image_mode=False,
-            model_complexity=1,  # Increased from 0 to 1 for better accuracy
-            min_detection_confidence=0.2,  # Lowered from 0.3 to 0.2
-            min_tracking_confidence=0.2,   # Lowered from 0.3 to 0.2
-        )
-        
+        self.enabled = MEDIAPIPE_AVAILABLE
         self.last_face_time = time.time()
         self.metrics_history = []
+        
+        if MEDIAPIPE_AVAILABLE and MEDIAPIPE_LEGACY:
+            self.mp_holistic = mp.solutions.holistic
+            self.mp_drawing = mp.solutions.drawing_utils
+            self.mp_drawing_styles = mp.solutions.drawing_styles
+            
+            self.holistic = self.mp_holistic.Holistic(
+                static_image_mode=False,
+                model_complexity=1,
+                min_detection_confidence=0.2,
+                min_tracking_confidence=0.2,
+            )
+        else:
+            self.mp_holistic = None
+            self.mp_drawing = None
+            self.mp_drawing_styles = None
+            self.holistic = None
+            logger.info("VisionService running in disabled mode (no mediapipe)")
+
         
     def draw_text_with_background(self, img, text, pos, font_scale=0.6, 
                                    thickness=2, text_color=(255, 255, 255), 
@@ -116,6 +145,21 @@ class VisionService:
     def analyze_frame_with_visualization(self, frame):
         """Analyze frame and draw all metrics on it"""
         image_h, image_w = frame.shape[:2]
+        now = time.time()
+        
+        # If mediapipe is not available, return default metrics
+        if not self.enabled or self.holistic is None:
+            return frame, {
+                "presence": False,
+                "eye_contact": "unknown",
+                "confidence_score": 50,
+                "posture": {"slouch_angle": 0.0, "is_good": True},
+                "head_pose": {"yaw": 0.0, "pitch": 0.0},
+                "feedback": ["⚠ Vision analysis unavailable (mediapipe not configured)"],
+                "overall": "Vision analysis disabled",
+                "timestamp": now
+            }
+        
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         results = self.holistic.process(rgb)
         
@@ -128,7 +172,6 @@ class VisionService:
         head_pose = {"yaw": 0.0, "pitch": 0.0}
         feedback_messages = []
         
-        now = time.time()
         
         print(f"[VisionService] Frame: {image_w}x{image_h}, Face detected: {results.face_landmarks is not None}, Pose detected: {results.pose_landmarks is not None}")
         
