@@ -20,6 +20,7 @@ import google.generativeai as genai
 from voice_service import VoiceService
 from avatar_service import AvatarService
 from vision_service import VisionService
+from opensmile_service import get_opensmile_service
 
 # Logging setup
 import logging
@@ -135,6 +136,19 @@ class FeedbackResponse(BaseModel):
     weaknesses: List[str]
     feedback_text: str
 
+# Pydantic models for Soft Skills Feedback
+class SoftSkillMetric(BaseModel):
+    name: str
+    score: float  # 0-5 scale
+    feedback: str
+    source: str = "ai"  # "ai" or "openSMILE"
+
+class SoftSkillsFeedback(BaseModel):
+    overallScore: int  # 0-100 scale
+    metrics: List[SoftSkillMetric]
+    details: Optional[Dict[str, Any]] = None
+    openSmileFeatures: Optional[Dict[str, Any]] = None
+
 class InterviewStartResponse(BaseModel):
     message: str
     sessionId: str
@@ -148,6 +162,7 @@ class InterviewSubmitResponse(BaseModel):
     roundTitle: str
     isComplete: bool
     feedback: FeedbackResponse | None = Field(default=None)
+    softSkills: Optional[SoftSkillsFeedback] = Field(default=None, description="Soft skills analysis per round")
 
 class HintRequest(BaseModel):
     sessionId: str
@@ -892,6 +907,160 @@ Rate from 1-10. Be constructive and specific."""
                 feedback_text=f"📋 Smart Analysis: Your answer shows understanding. {'Great use of specific examples!' if has_example else 'Try to include specific examples next time.'}"
             )
 
+    @staticmethod
+    async def generate_soft_skills_feedback(
+        user_answer: str, 
+        question: str,
+        round_title: str,
+        behavior_data: Optional[Dict[str, Any]] = None,
+        opensmile_features: Optional[Dict[str, Any]] = None
+    ) -> SoftSkillsFeedback:
+        """
+        Generates soft skills feedback based on the user's answer, behavior, and voice features.
+        
+        Args:
+            user_answer: The text of the user's response
+            question: The question being asked
+            round_title: Current round (HR, Technical, etc.)
+            behavior_data: Data from BehaviorMonitor (posture, eye contact, etc.)
+            opensmile_features: Voice features from openSMILE analysis
+        
+        Returns:
+            SoftSkillsFeedback with 5 key metrics and optional detailed breakdown
+        """
+        try:
+            # Build context for AI analysis
+            context_parts = []
+            
+            # Add voice features context if available
+            voice_context = ""
+            voice_metrics = {}
+            if opensmile_features:
+                derived = opensmile_features.get("derived_scores", {})
+                voice_context = f"""
+Voice Analysis (from openSMILE):
+- Tone Score: {derived.get('tone', 'N/A')}/5
+- Confidence Score: {derived.get('confidence', 'N/A')}/5
+- Pace Score: {derived.get('pace', 'N/A')}/5
+- Pitch variance: {opensmile_features.get('pitch', {}).get('variance', 'N/A')}
+- Pause ratio: {opensmile_features.get('temporal', {}).get('pause_ratio', 'N/A')}
+"""
+                voice_metrics = {
+                    "tone": derived.get("tone", 3.0),
+                    "confidence": derived.get("confidence", 3.0),
+                    "pace": derived.get("pace", 3.0)
+                }
+                context_parts.append(voice_context)
+            
+            # Add behavior context if available
+            behavior_context = ""
+            body_language_score = 3.0
+            if behavior_data:
+                behavior_context = f"""
+Behavior Analysis:
+- Eye Contact: {behavior_data.get('eye_contact', 'N/A')}
+- Confidence Score: {behavior_data.get('confidence_score', 'N/A')}/100
+- Posture: {'Good' if behavior_data.get('posture', {}).get('is_good', True) else 'Needs improvement'}
+"""
+                context_parts.append(behavior_context)
+                # Convert confidence score (0-100) to 0-5 scale
+                body_language_score = min(5.0, behavior_data.get('confidence_score', 60) / 20)
+            
+            prompt = f"""Analyze this interview response for SOFT SKILLS only.
+
+Round: {round_title}
+Question: {question}
+
+Candidate Response: {user_answer}
+
+{chr(10).join(context_parts)}
+
+Evaluate these 5 dimensions on a 0-5 scale with brief 1-line feedback each:
+
+1. Communication Clarity - How clear, articulate, and well-structured is the response?
+2. Voice Quality - Tone, pitch variation, and vocal presence ({"use openSMILE data above" if opensmile_features else "estimate from text style"})
+3. Speech Delivery - Pace, use of fillers (um, uh), repetition
+4. Body Language - {"use behavior data above" if behavior_data else "cannot assess from text, give neutral 3.0"}
+5. Confidence/Presence - Overall confidence, professionalism, executive presence
+
+Return ONLY this JSON:
+{{
+  "overallScore": 75,
+  "metrics": [
+    {{"name": "Communication", "score": 4.0, "feedback": "Clear structure with good examples."}},
+    {{"name": "Voice", "score": 3.5, "feedback": "Good tone variation.", "source": "openSMILE"}},
+    {{"name": "Speech Delivery", "score": 3.0, "feedback": "Moderate pace, few fillers."}},
+    {{"name": "Body Language", "score": 3.5, "feedback": "Good posture maintained."}},
+    {{"name": "Confidence", "score": 3.8, "feedback": "Speaks with conviction."}}
+  ]
+}}"""
+            
+            response = model.generate_content(
+                prompt,
+                generation_config=genai.types.GenerationConfig(
+                    temperature=0.4,
+                    max_output_tokens=500
+                )
+            )
+            
+            if not response.text:
+                raise ValueError("Empty response from model")
+            
+            # Extract JSON from response
+            raw = response.text.strip()
+            start = raw.find('{')
+            end = raw.rfind('}') + 1
+            if start >= 0 and end > start:
+                json_str = raw[start:end]
+                result = json.loads(json_str)
+                
+                # Build metrics list, enriching with openSMILE data where available
+                metrics = []
+                for m in result.get("metrics", []):
+                    metric_name = m.get("name", "Unknown")
+                    # Override voice metrics with openSMILE data if available
+                    if metric_name == "Voice" and voice_metrics:
+                        m["score"] = round((voice_metrics.get("tone", 3) + voice_metrics.get("confidence", 3)) / 2, 1)
+                        m["source"] = "openSMILE"
+                    elif metric_name == "Speech Delivery" and voice_metrics:
+                        m["score"] = voice_metrics.get("pace", m.get("score", 3.0))
+                        m["source"] = "openSMILE"
+                    elif metric_name == "Body Language" and behavior_data:
+                        m["score"] = round(body_language_score, 1)
+                        m["source"] = "behavior_monitor"
+                    
+                    metrics.append(SoftSkillMetric(
+                        name=m.get("name", "Unknown"),
+                        score=float(m.get("score", 3.0)),
+                        feedback=m.get("feedback", "--"),
+                        source=m.get("source", "ai")
+                    ))
+                
+                return SoftSkillsFeedback(
+                    overallScore=int(result.get("overallScore", 70)),
+                    metrics=metrics,
+                    details=None,  # Detailed breakdown can be added later
+                    openSmileFeatures=opensmile_features
+                )
+            else:
+                raise ValueError("No JSON found in response")
+                
+        except Exception as e:
+            logger.error(f"Error generating soft skills feedback: {e}")
+            # Return fallback soft skills feedback
+            return SoftSkillsFeedback(
+                overallScore=70,
+                metrics=[
+                    SoftSkillMetric(name="Communication", score=3.5, feedback="Clear response structure.", source="ai"),
+                    SoftSkillMetric(name="Voice", score=3.0, feedback="--", source="ai"),
+                    SoftSkillMetric(name="Speech Delivery", score=3.0, feedback="--", source="ai"),
+                    SoftSkillMetric(name="Body Language", score=3.0, feedback="--", source="ai"),
+                    SoftSkillMetric(name="Confidence", score=3.5, feedback="Shows good engagement.", source="ai")
+                ],
+                details=None,
+                openSmileFeatures=opensmile_features
+            )
+
 
 async def get_next_question_data(session: Dict[str, Any], next_round_info: Dict[str, Any]) -> Union[QuestionResponse, CodingQuestionResponse, MCQQuestionResponse]:
     """Helper function to get the next question based on the round type."""
@@ -1193,13 +1362,28 @@ async def submit_answer(answer_data: InterviewAnswer):
         job_role=session["job_role"],
         extracted_resume_text=None
     )
+    
+    # Generate soft skills feedback for this round
+    # Get behavior data from session if available
+    behavior_data = session.get("latest_behavior_data", None)
+    # openSMILE features are automatically extracted and stored when using /api/stt endpoint
+    opensmile_features = session.get("latest_opensmile_features", None)
+    
+    soft_skills = await GeminiService.generate_soft_skills_feedback(
+        user_answer=answer_data.userAnswer,
+        question=question_to_feedback,
+        round_title=current_round["title"],
+        behavior_data=behavior_data,
+        opensmile_features=opensmile_features
+    )
 
     # Store the user's answer and feedback to the session history
     if "interview_history" in session:
         session["interview_history"].append({
             "question": question_to_feedback,
             "user_answer": answer_data.userAnswer,
-            "feedback": feedback.dict()
+            "feedback": feedback.dict(),
+            "soft_skills": soft_skills.dict()
         })
     
     # Also store in the new format for comprehensive summary
@@ -1212,7 +1396,8 @@ async def submit_answer(answer_data: InterviewAnswer):
             "type": current_round["type"],
             "feedback_text": feedback.feedback_text,
             "strengths": feedback.strengths,
-            "weaknesses": feedback.weaknesses
+            "weaknesses": feedback.weaknesses,
+            "soft_skills": soft_skills.dict()
         })
         
         # Update completion status and duration
@@ -1236,7 +1421,8 @@ async def submit_answer(answer_data: InterviewAnswer):
             questionData=next_question_data,
             roundTitle=current_round["title"],
             isComplete=False,
-            feedback=feedback
+            feedback=feedback,
+            softSkills=soft_skills
         )
     else:
         if current_round_index + 1 < len(interview_plan):
@@ -1254,7 +1440,8 @@ async def submit_answer(answer_data: InterviewAnswer):
                 questionData=next_question_data,
                 roundTitle=next_round["title"],
                 isComplete=False,
-                feedback=feedback
+                feedback=feedback,
+                softSkills=soft_skills
             )
         else:
             # Mark interview as complete in new sessions storage
@@ -1269,7 +1456,8 @@ async def submit_answer(answer_data: InterviewAnswer):
                 questionData=QuestionResponse(question="Congratulations! You have completed the mock interview.", type="complete"),
                 roundTitle="Interview Complete",
                 isComplete=True,
-                feedback=feedback
+                feedback=feedback,
+                softSkills=soft_skills
             )
 
 
@@ -1351,15 +1539,124 @@ async def text_to_speech(tts_request: TTSRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"TTS error: {e}")
 
-# New endpoint for Speech-to-Text
+# New endpoint for Speech-to-Text with openSMILE voice analysis
 @app.post("/api/stt")
-async def speech_to_text(audio_file: UploadFile = File(...)):
+async def speech_to_text(
+    audio_file: UploadFile = File(...),
+    sessionId: Optional[str] = Form(None)
+):
+    """
+    Transcribe audio to text AND extract openSMILE voice features.
+    If sessionId is provided, stores the features for soft skills analysis.
+    """
+    import tempfile
+    
     try:
         audio_content = await audio_file.read()
+        
+        # Transcribe audio to text
         transcribed_text = await GeminiService.convert_speech_to_text(audio_content)
-        return STTResponse(text=transcribed_text)
+        
+        # Extract openSMILE voice features
+        opensmile_features = None
+        try:
+            # Save audio to temp file for openSMILE processing
+            file_ext = audio_file.filename.split('.')[-1] if audio_file.filename else 'webm'
+            with tempfile.NamedTemporaryFile(suffix=f".{file_ext}", delete=False) as temp_audio:
+                temp_audio.write(audio_content)
+                temp_path = temp_audio.name
+            
+            # Extract features using openSMILE
+            opensmile_service = get_opensmile_service()
+            features = opensmile_service.extract_features(temp_path)
+            
+            if features:
+                opensmile_features = features.to_dict()
+                logger.info(f"openSMILE features extracted: tone={opensmile_features.get('derived_scores', {}).get('tone')}, confidence={opensmile_features.get('derived_scores', {}).get('confidence')}")
+                
+                # Store in session if sessionId provided
+                if sessionId and sessionId in sessions:
+                    sessions[sessionId]["latest_opensmile_features"] = opensmile_features
+                    logger.info(f"Stored openSMILE features for session {sessionId}")
+            
+            # Clean up temp file
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+                
+        except Exception as e:
+            logger.warning(f"openSMILE feature extraction failed: {e}")
+            # Continue without openSMILE features - transcription still works
+        
+        return {
+            "text": transcribed_text,
+            "openSmileFeatures": opensmile_features
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"STT error: {e}")
+
+
+# Pydantic model for voice analysis response
+class VoiceAnalysisResponse(BaseModel):
+    pitch: Dict[str, float]
+    energy: Dict[str, Any]
+    voice_quality: Dict[str, float]
+    temporal: Dict[str, Any]
+    derived_scores: Dict[str, float]
+    source: str = "openSMILE"
+
+@app.post("/api/analyze-voice", response_model=VoiceAnalysisResponse)
+async def analyze_voice(
+    audio_file: UploadFile = File(...),
+    sessionId: Optional[str] = Form(None)
+):
+    """
+    Analyze voice features from audio using openSMILE.
+    Extracts pitch, energy, jitter, shimmer, and derives soft skill scores.
+    """
+    import tempfile
+    
+    try:
+        audio_content = await audio_file.read()
+        
+        # Save audio to temp file for openSMILE processing
+        file_ext = audio_file.filename.split('.')[-1] if audio_file.filename else 'webm'
+        with tempfile.NamedTemporaryFile(suffix=f".{file_ext}", delete=False) as temp_audio:
+            temp_audio.write(audio_content)
+            temp_path = temp_audio.name
+        
+        try:
+            # Extract features using openSMILE
+            opensmile_service = get_opensmile_service()
+            features = opensmile_service.extract_features(temp_path)
+            
+            if not features:
+                raise HTTPException(status_code=422, detail="Could not extract voice features from audio")
+            
+            opensmile_features = features.to_dict()
+            
+            # Store in session if sessionId provided
+            if sessionId and sessionId in sessions:
+                sessions[sessionId]["latest_opensmile_features"] = opensmile_features
+                logger.info(f"Stored openSMILE features for session {sessionId}")
+            
+            return VoiceAnalysisResponse(
+                pitch=opensmile_features["pitch"],
+                energy=opensmile_features["energy"],
+                voice_quality=opensmile_features["voice_quality"],
+                temporal=opensmile_features["temporal"],
+                derived_scores=opensmile_features["derived_scores"],
+                source="openSMILE" if opensmile_service.smile else "librosa"
+            )
+        finally:
+            # Clean up temp file
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+                
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Voice analysis error: {e}")
+        raise HTTPException(status_code=500, detail=f"Voice analysis error: {e}")
 
 
 # Pydantic model for vision analysis
