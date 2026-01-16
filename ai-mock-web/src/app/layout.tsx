@@ -5,6 +5,7 @@ import { VoiceProvider } from "@/contexts/VoiceContext";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "sonner";
 import SimpleParticles from "@/components/SimpleParticles";
+import TokenUsage from "@/components/TokenUsage";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -52,7 +53,7 @@ export default function RootLayout({
 
                 {/* Subtle Grid at the very back */}
                 <div className="absolute inset-0 bg-grid opacity-20 dark:opacity-10 -z-20"></div>
-                
+
                 {/* Gradient Overlay below particles */}
                 <div className="absolute inset-0 bg-gradient-to-br from-background/80 via-background/50 to-background/80 -z-10 pointer-events-none"></div>
               </div>
@@ -66,6 +67,7 @@ export default function RootLayout({
               </div>
             </main>
             <Toaster position="top-center" richColors />
+            <TokenUsage />
           </VoiceProvider>
         </ThemeProvider>
       </body>
