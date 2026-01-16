@@ -18,6 +18,7 @@ import { useSTT } from "@/hooks/useSTT";
 import { generateAvatar } from "@/lib/avatar";
 import { motion, AnimatePresence } from "framer-motion";
 import { Volume2, Video, Lightbulb, X } from "lucide-react";
+import TokenUsage from "@/components/TokenUsage";
 
 export default function InterviewPage() {
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -499,6 +500,10 @@ export default function InterviewPage() {
   return (
     <div className="relative min-h-screen p-4">
       <div className="animated-grid" />
+
+      {/* Token Usage Display */}
+      <TokenUsage sessionId={sessionId} />
+
       <div className="relative w-full max-w-7xl mx-auto">
         {sessionId ? (
           <>
