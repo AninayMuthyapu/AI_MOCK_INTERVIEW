@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { VoiceProvider } from "@/contexts/VoiceContext";
 import { ThemeProvider } from "@/components/theme-provider";
+import AuthProvider from "@/components/AuthProvider";
 import { Toaster } from "sonner";
 import SimpleParticles from "@/components/SimpleParticles";
 import TokenUsage from "@/components/TokenUsage";
@@ -38,38 +39,40 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <VoiceProvider>
-            <main className="min-h-screen relative overflow-hidden bg-background">
-              {/* Background Elements */}
-              <div className="fixed inset-0 -z-10 overflow-hidden">
-                {/* Base Background */}
-                <div className="absolute inset-0 bg-background -z-30"></div>
+        <AuthProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <VoiceProvider>
+              <main className="min-h-screen relative overflow-hidden bg-background">
+                {/* Background Elements */}
+                <div className="fixed inset-0 -z-10 overflow-hidden">
+                  {/* Base Background */}
+                  <div className="absolute inset-0 bg-background -z-30"></div>
 
-                {/* Subtle Grid at the very back */}
-                <div className="absolute inset-0 bg-grid opacity-20 dark:opacity-10 -z-20"></div>
+                  {/* Subtle Grid at the very back */}
+                  <div className="absolute inset-0 bg-grid opacity-20 dark:opacity-10 -z-20"></div>
 
-                {/* Gradient Overlay below particles */}
-                <div className="absolute inset-0 bg-gradient-to-br from-background/80 via-background/50 to-background/80 -z-10 pointer-events-none"></div>
-              </div>
+                  {/* Gradient Overlay below particles */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-background/80 via-background/50 to-background/80 -z-10 pointer-events-none"></div>
+                </div>
 
-              {/* Particle System ABOVE overlays, BELOW content */}
-              <SimpleParticles />
+                {/* Particle System ABOVE overlays, BELOW content */}
+                <SimpleParticles />
 
-              {/* Page Content */}
-              <div className="relative z-30">
-                {children}
-              </div>
-            </main>
-            <Toaster position="top-center" richColors />
-            <TokenUsage />
-          </VoiceProvider>
-        </ThemeProvider>
+                {/* Page Content */}
+                <div className="relative z-30">
+                  {children}
+                </div>
+              </main>
+              <Toaster position="top-center" richColors />
+              <TokenUsage />
+            </VoiceProvider>
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );

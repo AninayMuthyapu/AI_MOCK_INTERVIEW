@@ -84,8 +84,10 @@ export default function InterviewPage() {
   const { speak: speakTTS, stop: stopTTS, isSpeaking: isTTSSpeaking } = useTTS();
   const {
     transcript,
+    interimTranscript,
     isListening,
     isSupported: isSTTSupported,
+    hasPermission: hasSTTPermission,
     startListening,
     stopListening,
     resetTranscript,
@@ -708,17 +710,26 @@ export default function InterviewPage() {
                           <MicrophoneButton
                             isListening={isListening}
                             isSupported={isSTTSupported}
+                            hasPermission={hasSTTPermission}
                             onStart={startListening}
                             onStop={stopListening}
                             disabled={isLoading}
+                            error={sttError}
                           />
                         </div>
                       </div>
-                      {/* Listening Indicator */}
+                      {/* Listening Indicator with Interim Transcript */}
                       {isListening && (
-                        <div className="flex items-center space-x-2 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
-                          <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse" />
-                          <span className="text-sm text-red-300 font-medium">Listening... Speak now</span>
+                        <div className="flex flex-col space-y-2 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                          <div className="flex items-center space-x-2">
+                            <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse" />
+                            <span className="text-sm text-red-300 font-medium">Listening... Speak now</span>
+                          </div>
+                          {interimTranscript && (
+                            <div className="text-sm text-white/60 italic">
+                              {`"${interimTranscript}"`}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
