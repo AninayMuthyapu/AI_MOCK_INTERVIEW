@@ -1,124 +1,203 @@
 "use client";
-import { useState, FormEvent } from "react";
 
-export default function SignupPage() {
-  const [name, setName] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [confirmPassword, setConfirmPassword] = useState<string>("");
+import { useState, Suspense } from "react";
+import { signIn, useSession } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Loader2, ArrowRight, Sparkles, Gift, Calendar, CheckCircle } from "lucide-react";
+import Link from "next/link";
+
+function SignupContent() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (event: FormEvent) => {
-    event.preventDefault(); // Prevents the page from reloading
-    setError(null); // Clears previous errors
+  // Get the callback URL from query params or default to /resume
+  const callbackUrl = searchParams.get("callbackUrl") || "/resume";
 
-    // Client-side validation
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
+  // Redirect if already logged in
+  if (status === "authenticated" && session) {
+    router.push(callbackUrl);
+    return null;
+  }
 
-    if (!name || !email || !password) {
-      setError("Please fill in all fields.");
-      return;
-    }
-
+  const handleGoogleSignUp = async () => {
+    setIsLoading(true);
+    setError(null);
     try {
-      const response = await fetch("/api/signup", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name, email, password }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        // Handle successful signup
-        console.log("Signup successful:", data);
-        // Redirect to login or a success page
-      } else {
-        // Handle server-side errors
-        setError(data.message || "Something went wrong.");
-      }
-    } catch (err) {
-      console.error("API call failed:", err);
-      setError("Failed to connect to the server.");
+      // SignIn with Google - NextAuth handles creating new users
+      await signIn("google", { callbackUrl });
+    } catch {
+      setError("Failed to sign up. Please try again.");
+      setIsLoading(false);
     }
   };
 
+  if (status === "loading") {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-sm p-6 bg-white rounded-lg shadow-md">
-        <h1 className="text-lg font-semibold text-center mb-1">Sign Up</h1>
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          {/* Name input */}
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium">
-              Name
-            </label>
-            <input
-              type="text"
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-400"
-              placeholder="Enter your name"
-            />
+    <div className="flex items-center justify-center min-h-screen relative overflow-hidden py-8">
+      {/* Background effects */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-green-500/20 blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 rounded-full bg-primary/20 blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
+      </div>
+
+      <div className="w-full max-w-md p-8 rounded-2xl bg-card/80 backdrop-blur-lg border border-border/50 shadow-2xl">
+        {/* Logo */}
+        <div className="flex justify-center mb-4">
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center transition-transform group-hover:scale-110">
+              <span className="text-primary-foreground font-bold text-2xl">H</span>
+            </div>
+          </Link>
+        </div>
+
+        {/* Free Trial Banner */}
+        <div className="mb-6 p-4 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-xl">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center">
+              <Gift className="w-5 h-5 text-green-400" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-green-400 flex items-center gap-2">
+                20 Days Free Trial! <Sparkles className="w-4 h-4" />
+              </h3>
+              <p className="text-sm text-muted-foreground">No credit card required</p>
+            </div>
           </div>
-          {/* Email input */}
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium">
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-400"
-              placeholder="Enter your email"
-            />
+        </div>
+
+        {/* Header */}
+        <div className="text-center mb-6">
+          <h1 className="text-3xl font-bold text-foreground mb-2">
+            Create Account
+          </h1>
+          <p className="text-muted-foreground">
+            Start your interview prep journey today
+          </p>
+        </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+            <p className="text-sm text-destructive">{error}</p>
           </div>
-          {/* Password input */}
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium">
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-400"
-              placeholder="Enter your password"
-            />
+        )}
+
+        {/* Google Sign Up Button */}
+        <button
+          onClick={handleGoogleSignUp}
+          disabled={isLoading}
+          className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-white hover:bg-gray-50 text-gray-800 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed group"
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span>Creating account...</span>
+            </>
+          ) : (
+            <>
+              {/* Google Logo */}
+              <svg className="w-5 h-5" viewBox="0 0 24 24">
+                <path
+                  fill="#4285F4"
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                />
+              </svg>
+              <span>Sign up with Google</span>
+              <ArrowRight className="w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+            </>
+          )}
+        </button>
+
+        {/* What you get */}
+        <div className="mt-8 pt-6 border-t border-border/50">
+          <p className="text-sm text-center text-muted-foreground mb-4">
+            Your free trial includes:
+          </p>
+          <div className="space-y-3">
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
+              <span>Unlimited mock interviews</span>
+            </div>
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
+              <span>AI-powered feedback & scoring</span>
+            </div>
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
+              <span>Resume ATS review</span>
+            </div>
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <Calendar className="w-4 h-4 text-primary flex-shrink-0" />
+              <span className="font-medium text-foreground">20 days free access</span>
+            </div>
           </div>
-          {/* Confirm Password input */}
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium">
-              Confirm Password
-            </label>
-            <input
-              type="password"
-              id="confirmPassword"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-400"
-              placeholder="Confirm your password"
-            />
-          </div>
-          {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-          {/* Submit button */}
-          <button
-            type="submit"
-            className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-600"
-          >
-            Sign Up
-          </button>
-        </form>
+        </div>
+
+        {/* Login Link */}
+        <p className="mt-6 text-center text-sm text-muted-foreground">
+          Already have an account?{" "}
+          <Link href="/login" className="text-primary hover:underline font-medium">
+            Sign in
+          </Link>
+        </p>
+
+        {/* Terms */}
+        <p className="mt-4 text-center text-xs text-muted-foreground">
+          By signing up, you agree to our{" "}
+          <Link href="#" className="text-primary hover:underline">
+            Terms of Service
+          </Link>{" "}
+          and{" "}
+          <Link href="#" className="text-primary hover:underline">
+            Privacy Policy
+          </Link>
+          .
+        </p>
       </div>
     </div>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="flex flex-col items-center gap-4">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <SignupContent />
+    </Suspense>
   );
 }

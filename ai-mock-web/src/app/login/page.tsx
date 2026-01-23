@@ -155,6 +155,14 @@ function LoginContent() {
           </Link>
           .
         </p>
+
+        {/* Signup Link */}
+        <p className="mt-4 text-center text-sm text-muted-foreground">
+          Don&apos;t have an account?{" "}
+          <Link href="/signup" className="text-primary hover:underline font-medium">
+            Sign up free
+          </Link>
+        </p>
       </div>
     </div>
   );
