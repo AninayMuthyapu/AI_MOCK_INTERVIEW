@@ -308,6 +308,113 @@ class ResumeParserService:
         return "\n".join(text)
 
 # =============================
+# User Authentication & Sync
+# =============================
+
+class UserSyncRequest(BaseModel):
+    """Request model for syncing user from NextAuth to backend."""
+    email: str
+    name: Optional[str] = None
+    image: Optional[str] = None
+    provider: str = "google"
+    provider_id: Optional[str] = None
+
+class UserSyncResponse(BaseModel):
+    """Response model for user sync."""
+    success: bool
+    user_id: str
+    message: str
+
+class UserProfileResponse(BaseModel):
+    """Response model for user profile."""
+    id: str
+    email: str
+    name: Optional[str]
+    image: Optional[str]
+    provider: str
+    created_at: str
+    interview_count: int
+
+# In-memory user store (will be replaced with PostgreSQL in production)
+users_store: Dict[str, Dict[str, Any]] = {}
+
+@app.post("/api/auth/sync-user", response_model=UserSyncResponse)
+async def sync_user(request: UserSyncRequest):
+    """
+    Sync user from NextAuth OAuth to backend database.
+    Called automatically when a user signs in via Google OAuth.
+    """
+    try:
+        # Check if user already exists
+        user_id = None
+        for uid, user in users_store.items():
+            if user["email"] == request.email:
+                # Update existing user
+                user["name"] = request.name or user["name"]
+                user["image"] = request.image or user["image"]
+                user["provider_id"] = request.provider_id or user["provider_id"]
+                user["updated_at"] = datetime.utcnow().isoformat()
+                user_id = uid
+                logger.info(f"Updated existing user: {request.email}")
+                return UserSyncResponse(
+                    success=True,
+                    user_id=uid,
+                    message="User updated successfully"
+                )
+        
+        # Create new user
+        import uuid
+        user_id = str(uuid.uuid4())
+        users_store[user_id] = {
+            "id": user_id,
+            "email": request.email,
+            "name": request.name,
+            "image": request.image,
+            "provider": request.provider,
+            "provider_id": request.provider_id,
+            "created_at": datetime.utcnow().isoformat(),
+            "updated_at": datetime.utcnow().isoformat(),
+            "interview_sessions": []
+        }
+        
+        logger.info(f"Created new user: {request.email} with ID: {user_id}")
+        return UserSyncResponse(
+            success=True,
+            user_id=user_id,
+            message="User created successfully"
+        )
+        
+    except Exception as e:
+        logger.error(f"Error syncing user: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to sync user: {str(e)}")
+
+@app.get("/api/auth/user/{email}", response_model=UserProfileResponse)
+async def get_user_by_email(email: str):
+    """
+    Get user profile by email.
+    """
+    for uid, user in users_store.items():
+        if user["email"] == email:
+            return UserProfileResponse(
+                id=user["id"],
+                email=user["email"],
+                name=user.get("name"),
+                image=user.get("image"),
+                provider=user.get("provider", "google"),
+                created_at=user.get("created_at", ""),
+                interview_count=len(user.get("interview_sessions", []))
+            )
+    raise HTTPException(status_code=404, detail="User not found")
+
+@app.get("/api/auth/me")
+async def get_current_user_placeholder():
+    """
+    Placeholder endpoint for getting current user.
+    In production, this would validate JWT token from NextAuth.
+    """
+    return {"message": "Use NextAuth session on frontend to get current user"}
+
+# =============================
 # Avatar video generation route
 # =============================
 @app.post("/generate_avatar", response_model=GenerateAvatarResponse)
