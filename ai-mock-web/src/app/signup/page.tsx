@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, Suspense, useEffect } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, ArrowRight, Sparkles, Gift, Calendar, CheckCircle } from "lucide-react";
@@ -17,10 +17,11 @@ function SignupContent() {
   const callbackUrl = searchParams.get("callbackUrl") || "/resume";
 
   // Redirect if already logged in
-  if (status === "authenticated" && session) {
-    router.push(callbackUrl);
-    return null;
-  }
+  useEffect(() => {
+    if (status === "authenticated" && session) {
+      router.push(callbackUrl);
+    }
+  }, [status, session, router, callbackUrl]);
 
   const handleGoogleSignUp = async () => {
     setIsLoading(true);
