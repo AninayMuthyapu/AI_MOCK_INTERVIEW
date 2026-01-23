@@ -1,56 +1,92 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { signIn, useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Loader2, ArrowRight, Sparkles } from "lucide-react";
+import Link from "next/link";
 
-export default function LoginPage() {
+function LoginContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Get the callback URL from query params or default to /resume
+  const callbackUrl = searchParams.get("callbackUrl") || "/resume";
+
   // Redirect if already logged in
-  if (status === "authenticated" && session) {
-    router.push("/resume");
-    return null;
-  }
+  useEffect(() => {
+    if (status === "authenticated" && session) {
+      router.push(callbackUrl);
+    }
+  }, [status, session, router, callbackUrl]);
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      await signIn("google", { callbackUrl: "/resume" });
+      await signIn("google", { callbackUrl });
     } catch {
       setError("Failed to sign in. Please try again.");
       setIsLoading(false);
     }
   };
 
+  if (status === "loading") {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="w-full max-w-md p-8 rounded-2xl glass-effect neon-border">
+    <div className="flex items-center justify-center min-h-screen relative overflow-hidden">
+      {/* Background effects */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-primary/20 blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 rounded-full bg-accent/20 blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
+      </div>
+
+      <div className="w-full max-w-md p-8 rounded-2xl bg-card/80 backdrop-blur-lg border border-border/50 shadow-2xl">
+        {/* Logo */}
+        <div className="flex justify-center mb-6">
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center transition-transform group-hover:scale-110">
+              <span className="text-primary-foreground font-bold text-2xl">H</span>
+            </div>
+          </Link>
+        </div>
+
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
-          <p className="text-white/60">Sign in to continue your interview prep</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2 flex items-center justify-center gap-2">
+            Welcome <Sparkles className="w-6 h-6 text-primary" />
+          </h1>
+          <p className="text-muted-foreground">
+            Sign in to start your interview prep journey
+          </p>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
-            <p className="text-sm text-red-300">{error}</p>
+          <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+            <p className="text-sm text-destructive">{error}</p>
           </div>
         )}
 
         {/* Google Sign In Button */}
         <button
           onClick={handleGoogleSignIn}
-          disabled={isLoading || status === "loading"}
-          className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-white hover:bg-gray-100 text-gray-800 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={isLoading}
+          className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-white hover:bg-gray-50 text-gray-800 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed group"
         >
-          {isLoading || status === "loading" ? (
+          {isLoading ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
               <span>Signing in...</span>
@@ -77,30 +113,68 @@ export default function LoginPage() {
                 />
               </svg>
               <span>Continue with Google</span>
+              <ArrowRight className="w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
             </>
           )}
         </button>
 
-        {/* Divider */}
-        <div className="flex items-center my-6">
-          <div className="flex-1 border-t border-white/10"></div>
-          <span className="px-4 text-sm text-white/40">or</span>
-          <div className="flex-1 border-t border-white/10"></div>
+        {/* Features */}
+        <div className="mt-8 pt-6 border-t border-border/50">
+          <p className="text-sm text-center text-muted-foreground mb-4">
+            Why sign in?
+          </p>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+              Save progress
+            </div>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+              Track scores
+            </div>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+              Interview history
+            </div>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+              Personalized tips
+            </div>
+          </div>
         </div>
 
-        {/* Continue Without Login */}
-        <button
-          onClick={() => router.push("/resume")}
-          className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-white/5 hover:bg-white/10 text-white/80 rounded-xl font-medium transition-all duration-200 border border-white/10"
-        >
-          <span>Continue as Guest</span>
-        </button>
-
         {/* Terms */}
-        <p className="mt-6 text-center text-xs text-white/40">
-          By signing in, you agree to our Terms of Service and Privacy Policy.
+        <p className="mt-6 text-center text-xs text-muted-foreground">
+          By signing in, you agree to our{" "}
+          <Link href="#" className="text-primary hover:underline">
+            Terms of Service
+          </Link>{" "}
+          and{" "}
+          <Link href="#" className="text-primary hover:underline">
+            Privacy Policy
+          </Link>
+          .
         </p>
       </div>
     </div>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="flex flex-col items-center gap-4">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <LoginContent />
+    </Suspense>
   );
 }

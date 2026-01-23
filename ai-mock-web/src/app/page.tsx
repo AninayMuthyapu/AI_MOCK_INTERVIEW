@@ -24,7 +24,7 @@ export default function Home() {
     return () => window.removeEventListener("mousemove", handleMouseMove)
   }, [])
 
-  // Ensure component is mounted to avoid hydration issues
+  // Ensure component is mounted to avoid hydration issues .
   useEffect(() => {
     setMounted(true)
   }, [])
@@ -106,7 +106,7 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link
-              href="/resume?mode=company"
+              href="/login?callbackUrl=%2Fresume"
               className="px-8 py-3.5 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition-colors shadow-lg hover:shadow-primary/30"
             >
               Start Free Trial
@@ -181,7 +181,7 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link
-              href="/resume?mode=company"
+              href="/login?callbackUrl=%2Fresume"
               className="px-8 py-3.5 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition-colors shadow-lg hover:shadow-primary/30"
             >
               Start Free Trial
