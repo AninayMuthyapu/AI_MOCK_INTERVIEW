@@ -1,637 +1,403 @@
 """
-Enhanced Vision Service - Accurate Real-time Behavior Analysis
-Improved with:
-- Stricter eye contact thresholds
-- Iris-based gaze direction
-- Eye Aspect Ratio for blink/liveness detection
-- Temporal smoothing for stable scores
+Enhanced Vision Service - Powered by Behavioral Analysis Engine.
+Uses the Postureanalysis-main engine for comprehensive behavioral analysis:
+- Face presence + attention tracking
+- Pose detection + posture quality scoring
+- Iris-based gaze direction + eye contact quality
+- Movement stability analysis
+- Dynamic confidence scoring with history
+- Context-aware feedback generation
 """
 
 import cv2
 import numpy as np
 import time
+import sys
+import os
 import base64
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, Optional
 from collections import deque
 import logging
 
 logger = logging.getLogger(__name__)
 
-# Try to import mediapipe with fallback for different versions
-MEDIAPIPE_AVAILABLE = False
-MEDIAPIPE_LEGACY = False
+# Add Postureanalysis-main to the Python path
+POSTURE_ENGINE_DIR = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    "..",
+    "Postureanalysis-main"
+)
+if os.path.isdir(POSTURE_ENGINE_DIR):
+    sys.path.insert(0, os.path.abspath(POSTURE_ENGINE_DIR))
 
+# Try to import the behavioral analysis engine and its config
+ENGINE_AVAILABLE = False
+ENGINE_CONFIG = None
 try:
-    import mediapipe as mp
-    # Check if legacy solutions API is available
-    if hasattr(mp, 'solutions') and hasattr(mp.solutions, 'holistic'):
-        MEDIAPIPE_AVAILABLE = True
-        MEDIAPIPE_LEGACY = True
-        logger.info("mediapipe loaded with legacy solutions API")
-    else:
-        # New version without solutions - we'll use a simplified fallback
-        logger.warning("mediapipe loaded but solutions API not available - using basic mode")
-        MEDIAPIPE_AVAILABLE = False
-except ImportError:
-    logger.warning("mediapipe not installed - vision analysis disabled")
+    from engine import BehaviorAnalysisEngine
+    import config as engine_config
+    ENGINE_AVAILABLE = True
+    ENGINE_CONFIG = engine_config
+    logger.info("Postureanalysis-main engine loaded successfully")
+except ImportError as e:
+    logger.warning(f"Could not import BehaviorAnalysisEngine: {e}")
+except Exception as e:
+    logger.warning(f"Error loading BehaviorAnalysisEngine: {e}")
+
+# Fallback: try mediapipe directly for basic mode
+MEDIAPIPE_AVAILABLE = False
+if not ENGINE_AVAILABLE:
+    try:
+        import mediapipe as mp
+        if hasattr(mp, 'solutions') and hasattr(mp.solutions, 'holistic'):
+            MEDIAPIPE_AVAILABLE = True
+            logger.info("Falling back to basic mediapipe holistic mode")
+    except ImportError:
+        logger.warning("mediapipe not installed - vision analysis disabled")
 
 
 class VisionService:
-    """Enhanced vision service with accurate confidence scoring."""
-    
-    # Stricter thresholds for eye contact
-    EYE_CONTACT_GOOD_THRESHOLD = 8       # degrees (was 15)
-    EYE_CONTACT_MODERATE_THRESHOLD = 15  # degrees (was 30)
-    EYE_CONTACT_AWAY_THRESHOLD = 25      # degrees (was not defined)
-    
-    # Posture thresholds
-    GOOD_POSTURE_THRESHOLD = 15.0        # degrees (was 20)
-    
-    # Eye Aspect Ratio thresholds for blink detection
-    EAR_BLINK_THRESHOLD = 0.2            # Below this = eyes closed
-    EAR_OPEN_THRESHOLD = 0.25            # Above this = eyes open
-    
-    # Temporal smoothing parameters
-    SMOOTHING_WINDOW = 5                 # Number of frames to average
-    
-    # MediaPipe landmark indices for eyes
-    # Left eye landmarks
-    LEFT_EYE_LANDMARKS = [33, 160, 158, 133, 153, 144]
-    # Right eye landmarks
-    RIGHT_EYE_LANDMARKS = [362, 385, 387, 263, 373, 380]
-    # Iris landmarks (center of each iris)
-    LEFT_IRIS_CENTER = 468
-    RIGHT_IRIS_CENTER = 473
-    
-    def __init__(self):
-        self.enabled = MEDIAPIPE_AVAILABLE
-        self.last_face_time = time.time()
-        
-        # Temporal smoothing buffers
-        self.confidence_history: deque = deque(maxlen=self.SMOOTHING_WINDOW)
-        self.ear_history: deque = deque(maxlen=self.SMOOTHING_WINDOW)
-        self.gaze_history: deque = deque(maxlen=self.SMOOTHING_WINDOW)
-        
-        # Blink detection
-        self.blink_count = 0
-        self.last_blink_time = time.time()
-        self.eyes_were_closed = False
-        
-        if MEDIAPIPE_AVAILABLE and MEDIAPIPE_LEGACY:
-            self.mp_holistic = mp.solutions.holistic
-            self.mp_face_mesh = mp.solutions.face_mesh
-            self.mp_drawing = mp.solutions.drawing_utils
-            self.mp_drawing_styles = mp.solutions.drawing_styles
-            
-            # Use holistic for pose + face landmarks
-            self.holistic = self.mp_holistic.Holistic(
-                static_image_mode=False,
-                model_complexity=1,
-                min_detection_confidence=0.5,  # Increased from 0.2
-                min_tracking_confidence=0.5,   # Increased from 0.2
-                refine_face_landmarks=True,    # Enable iris tracking
-            )
-        else:
-            self.mp_holistic = None
-            self.mp_face_mesh = None
-            self.mp_drawing = None
-            self.mp_drawing_styles = None
-            self.holistic = None
-            logger.info("VisionService running in disabled mode (no mediapipe)")
+    """Enhanced vision service powered by the Behavioral Analysis Engine."""
 
-    def calculate_eye_aspect_ratio(self, eye_landmarks: List, all_landmarks) -> float:
-        """
-        Calculate Eye Aspect Ratio (EAR) to detect blinks and verify real eyes.
-        EAR = (|p2-p6| + |p3-p5|) / (2 * |p1-p4|)
-        Where p1-p6 are the 6 eye landmarks.
-        
-        Real eyes blink regularly (EAR drops to ~0.1-0.2 during blink).
-        Photos/static images have constant EAR.
-        """
-        try:
-            # Get the 6 landmark coordinates
-            p1 = np.array([all_landmarks.landmark[eye_landmarks[0]].x, 
-                          all_landmarks.landmark[eye_landmarks[0]].y])
-            p2 = np.array([all_landmarks.landmark[eye_landmarks[1]].x, 
-                          all_landmarks.landmark[eye_landmarks[1]].y])
-            p3 = np.array([all_landmarks.landmark[eye_landmarks[2]].x, 
-                          all_landmarks.landmark[eye_landmarks[2]].y])
-            p4 = np.array([all_landmarks.landmark[eye_landmarks[3]].x, 
-                          all_landmarks.landmark[eye_landmarks[3]].y])
-            p5 = np.array([all_landmarks.landmark[eye_landmarks[4]].x, 
-                          all_landmarks.landmark[eye_landmarks[4]].y])
-            p6 = np.array([all_landmarks.landmark[eye_landmarks[5]].x, 
-                          all_landmarks.landmark[eye_landmarks[5]].y])
-            
-            # Calculate vertical distances
-            vertical1 = np.linalg.norm(p2 - p6)
-            vertical2 = np.linalg.norm(p3 - p5)
-            
-            # Calculate horizontal distance
-            horizontal = np.linalg.norm(p1 - p4)
-            
-            if horizontal == 0:
-                return 0.3  # Default to open
-                
-            ear = (vertical1 + vertical2) / (2.0 * horizontal)
-            return float(ear)
-            
-        except Exception as e:
-            logger.debug(f"EAR calculation error: {e}")
-            return 0.3  # Default to open
-    
-    def calculate_gaze_direction(self, face_landmarks, image_w: int, image_h: int) -> Dict[str, float]:
-        """
-        Calculate gaze direction using iris position relative to eye corners.
-        More accurate than head pose alone for determining where user is looking.
-        """
-        try:
-            # Get iris centers (available with refine_face_landmarks=True)
-            left_iris = face_landmarks.landmark[self.LEFT_IRIS_CENTER]
-            right_iris = face_landmarks.landmark[self.RIGHT_IRIS_CENTER]
-            
-            # Get eye corners for reference
-            left_eye_inner = face_landmarks.landmark[133]
-            left_eye_outer = face_landmarks.landmark[33]
-            right_eye_inner = face_landmarks.landmark[362]
-            right_eye_outer = face_landmarks.landmark[263]
-            
-            # Calculate horizontal gaze ratio for each eye
-            # 0 = looking far left, 0.5 = center, 1 = looking far right
-            left_eye_width = abs(left_eye_outer.x - left_eye_inner.x)
-            right_eye_width = abs(right_eye_outer.x - right_eye_inner.x)
-            
-            if left_eye_width > 0:
-                left_gaze_ratio = (left_iris.x - left_eye_outer.x) / left_eye_width
-            else:
-                left_gaze_ratio = 0.5
-                
-            if right_eye_width > 0:
-                right_gaze_ratio = (right_iris.x - right_eye_inner.x) / right_eye_width
-            else:
-                right_gaze_ratio = 0.5
-            
-            # Average gaze ratio (0.5 = looking at camera)
-            gaze_ratio = (left_gaze_ratio + right_gaze_ratio) / 2
-            
-            # Calculate vertical gaze using iris Y position relative to eye height
-            left_eye_top = face_landmarks.landmark[159]
-            left_eye_bottom = face_landmarks.landmark[145]
-            left_eye_height = abs(left_eye_top.y - left_eye_bottom.y)
-            
-            if left_eye_height > 0:
-                vertical_gaze = (left_iris.y - left_eye_top.y) / left_eye_height
-            else:
-                vertical_gaze = 0.5
-            
-            # Convert to deviation from center (0 = looking at camera)
-            horizontal_deviation = abs(gaze_ratio - 0.5) * 100  # 0-50 scale
-            vertical_deviation = abs(vertical_gaze - 0.5) * 100  # 0-50 scale
-            
-            return {
-                "horizontal_deviation": float(horizontal_deviation),
-                "vertical_deviation": float(vertical_deviation),
-                "gaze_ratio": float(gaze_ratio),
-                "vertical_gaze": float(vertical_gaze)
-            }
-            
-        except Exception as e:
-            logger.debug(f"Gaze calculation error: {e}")
-            return {
-                "horizontal_deviation": 25.0,
-                "vertical_deviation": 25.0,
-                "gaze_ratio": 0.5,
-                "vertical_gaze": 0.5
-            }
-    
-    def head_direction_estimate(self, face_landmarks, image_w: int, image_h: int) -> Dict[str, float]:
-        """Calculate head pose angles from face landmarks."""
-        try:
-            nose = face_landmarks.landmark[1]
-            chin = face_landmarks.landmark[152]
-            left_eye = face_landmarks.landmark[33]
-            right_eye = face_landmarks.landmark[263]
-            
-            yaw = np.degrees(np.arctan2(right_eye.y - left_eye.y, right_eye.x - left_eye.x))
-            pitch = np.degrees(np.arctan2(nose.y - chin.y, 
-                                          np.sqrt((nose.x - chin.x)**2 + (nose.z - chin.z)**2)))
-            
-            return {"yaw": float(yaw), "pitch": float(pitch)}
-        except Exception as e:
-            logger.debug(f"Head pose calculation error: {e}")
-            return {"yaw": 0.0, "pitch": 0.0}
-    
-    def posture_slouch_estimate(self, pose_landmarks, image_w: int, image_h: int) -> float:
-        """Calculate slouch angle from shoulders to hips."""
-        try:
-            left_shoulder = pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_SHOULDER]
-            right_shoulder = pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_SHOULDER]
-            left_hip = pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_HIP]
-            right_hip = pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_HIP]
-            
-            shoulder_mid_x = (left_shoulder.x + right_shoulder.x) / 2
-            shoulder_mid_y = (left_shoulder.y + right_shoulder.y) / 2
-            hip_mid_x = (left_hip.x + right_hip.x) / 2
-            hip_mid_y = (left_hip.y + right_hip.y) / 2
-            
-            dx = shoulder_mid_x - hip_mid_x
-            dy = shoulder_mid_y - hip_mid_y
-            
-            angle = abs(np.degrees(np.arctan2(dx, dy)))
-            return float(angle)
-        except Exception as e:
-            logger.debug(f"Posture calculation error: {e}")
-            return 0.0
-    
-    def temporal_smooth_confidence(self, raw_score: float) -> float:
-        """Apply weighted moving average for stable confidence scores."""
-        self.confidence_history.append(raw_score)
-        
-        if len(self.confidence_history) == 0:
-            return raw_score
-        
-        # Exponential weights - recent scores matter more
-        weights = [1.0, 1.5, 2.0, 2.5, 3.0][:len(self.confidence_history)]
-        weighted_sum = sum(s * w for s, w in zip(self.confidence_history, weights))
-        weight_total = sum(weights)
-        
-        return weighted_sum / weight_total if weight_total > 0 else raw_score
-    
-    def detect_liveness(self, ear: float) -> Tuple[bool, bool]:
-        """
-        Detect if user is real (not a photo) by tracking blinks.
-        Returns: (is_likely_real, eyes_currently_open)
-        """
-        now = time.time()
-        eyes_open = ear > self.EAR_OPEN_THRESHOLD
-        eyes_closed = ear < self.EAR_BLINK_THRESHOLD
-        
-        # Detect blink transition
-        if self.eyes_were_closed and eyes_open:
-            self.blink_count += 1
-            self.last_blink_time = now
-            
-        self.eyes_were_closed = eyes_closed
-        
-        # Real person blinks every 2-10 seconds typically
-        # If we've seen blinks, more likely to be real
-        time_since_blink = now - self.last_blink_time
-        is_likely_real = self.blink_count > 0 or time_since_blink < 15.0
-        
-        return is_likely_real, eyes_open
-    
-    def calculate_confidence_score(
-        self,
-        presence: bool,
-        eye_contact: str,
-        is_good_posture: bool,
-        ear: float,
-        gaze: Dict[str, float],
-        is_likely_real: bool
-    ) -> int:
-        """
-        Calculate confidence score starting from 0.
-        Each positive behavior adds points.
-        """
-        score = 0
-        
-        # Face presence (0-20 points)
-        if presence:
-            score += 20
-        
-        # Eye contact based on gaze (0-30 points)
-        gaze_deviation = max(gaze["horizontal_deviation"], gaze["vertical_deviation"])
-        if gaze_deviation < 10:  # Looking directly at camera
-            score += 30
-            eye_contact = "good"
-        elif gaze_deviation < 20:  # Close to camera
-            score += 20
-            eye_contact = "moderate"
-        elif gaze_deviation < 35:  # Slightly off
-            score += 10
-            eye_contact = "moderate"
-        else:  # Looking away
-            eye_contact = "away"
-        
-        # Eyes open and liveness (0-20 points)
-        if ear > self.EAR_OPEN_THRESHOLD:
-            score += 10
-        if is_likely_real:
-            score += 10
-        
-        # Good posture (0-10 points)
-        if is_good_posture:
-            score += 10
-        
-        # Head pose bonus (0-10 points) - rewards facing camera
-        # Already factored into presence, skip for now
-        score += 0  # Reserved for future use
-        
-        # Clamp to 0-100
-        return max(0, min(100, score))
-    
-    def draw_text_with_background(self, img, text, pos, font_scale=0.6, 
-                                   thickness=2, text_color=(255, 255, 255), 
-                                   bg_color=(0, 0, 0), padding=5):
-        """Draw text with background rectangle."""
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        (text_width, text_height), baseline = cv2.getTextSize(text, font, font_scale, thickness)
-        
-        x, y = pos
-        cv2.rectangle(img, 
-                     (x - padding, y - text_height - padding),
-                     (x + text_width + padding, y + baseline + padding),
-                     bg_color, -1)
-        cv2.putText(img, text, (x, y), font, font_scale, text_color, thickness)
-        
-    def draw_confidence_bar(self, img, confidence, x, y, width=200, height=20):
-        """Draw confidence score as progress bar."""
-        # Background
-        cv2.rectangle(img, (x, y), (x + width, y + height), (50, 50, 50), -1)
-        
-        # Fill based on confidence
-        fill_width = int((confidence / 100) * width)
-        if confidence >= 70:
-            color = (0, 255, 0)  # Green
-        elif confidence >= 40:
-            color = (0, 255, 255)  # Yellow
+    def __init__(self):
+        self.enabled = ENGINE_AVAILABLE or MEDIAPIPE_AVAILABLE
+        self.last_face_time = time.time()
+
+        # Load thresholds from posture engine config or use defaults
+        if ENGINE_CONFIG:
+            self.high_confidence = ENGINE_CONFIG.HIGH_CONFIDENCE_THRESHOLD  # 85
+            self.moderate_confidence = ENGINE_CONFIG.MODERATE_CONFIDENCE_THRESHOLD  # 65
+            self.face_absence_timeout = ENGINE_CONFIG.FACE_ABSENCE_TIMEOUT  # 2.0s
+            self.posture_upright_threshold = ENGINE_CONFIG.POSTURE_UPRIGHT_THRESHOLD  # 10°
+            self.face_detection_confidence = ENGINE_CONFIG.FACE_DETECTION_CONFIDENCE  # 0.5
+            self.pose_detection_confidence = ENGINE_CONFIG.POSE_DETECTION_CONFIDENCE  # 0.5
+            self.pose_tracking_confidence = ENGINE_CONFIG.POSE_TRACKING_CONFIDENCE  # 0.5
+            self.weight_face = ENGINE_CONFIG.WEIGHT_FACE_PRESENCE  # 0.20
+            self.weight_eye_contact = ENGINE_CONFIG.WEIGHT_EYE_CONTACT  # 0.25
+            self.weight_posture = ENGINE_CONFIG.WEIGHT_POSTURE  # 0.30
+            self.weight_movement = ENGINE_CONFIG.WEIGHT_MOVEMENT  # 0.25
         else:
-            color = (0, 0, 255)  # Red
-            
-        cv2.rectangle(img, (x, y), (x + fill_width, y + height), color, -1)
-        
-        # Border
-        cv2.rectangle(img, (x, y), (x + width, y + height), (255, 255, 255), 2)
-        
-        # Text
-        text = f"{confidence}%"
-        cv2.putText(img, text, (x + width + 10, y + 15), 
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-    
-    def draw_status_indicator(self, img, status, label, x, y):
-        """Draw colored status circle with label."""
-        colors = {
-            'good': (0, 255, 0),
-            'moderate': (0, 255, 255),
-            'away': (0, 128, 255),
-            'poor': (0, 0, 255),
-            'unknown': (128, 128, 128)
-        }
-        color = colors.get(status, (128, 128, 128))
-        
-        # Circle
-        cv2.circle(img, (x, y), 8, color, -1)
-        cv2.circle(img, (x, y), 8, (255, 255, 255), 2)
-        
-        # Label
-        cv2.putText(img, label, (x + 15, y + 5), 
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-    
-    def analyze_frame_with_visualization(self, frame):
-        """Analyze frame and draw all metrics on it."""
+            self.high_confidence = 85
+            self.moderate_confidence = 65
+            self.face_absence_timeout = 2.0
+            self.posture_upright_threshold = 10
+            self.face_detection_confidence = 0.5
+            self.pose_detection_confidence = 0.5
+            self.pose_tracking_confidence = 0.5
+            self.weight_face = 0.20
+            self.weight_eye_contact = 0.25
+            self.weight_posture = 0.30
+            self.weight_movement = 0.25
+
+        # Temporal smoothing for when engine is not available
+        self.confidence_history: deque = deque(maxlen=5)
+
+        if ENGINE_AVAILABLE:
+            logger.info("Initializing BehaviorAnalysisEngine (no camera)")
+            self.engine = BehaviorAnalysisEngine(use_camera=False)
+            self.engine.start_session()
+            self.using_engine = True
+        else:
+            self.engine = None
+            self.using_engine = False
+            # Fallback to basic holistic if available
+            if MEDIAPIPE_AVAILABLE:
+                self._init_basic_holistic()
+            logger.info(f"VisionService running in {'basic' if MEDIAPIPE_AVAILABLE else 'disabled'} mode")
+
+    def _init_basic_holistic(self):
+        """Initialize basic MediaPipe holistic as fallback."""
+        import mediapipe as mp
+        self.mp_holistic = mp.solutions.holistic
+        self.holistic = self.mp_holistic.Holistic(
+            static_image_mode=False,
+            model_complexity=1,
+            min_detection_confidence=self.face_detection_confidence,
+            min_tracking_confidence=self.pose_tracking_confidence,
+            refine_face_landmarks=True,
+        )
+
+    def process_base64_frame(self, base64_image: str) -> Dict:
+        """Process base64 image and return behavioral metrics (for API)."""
+        try:
+            if "base64," in base64_image:
+                base64_image = base64_image.split("base64,")[1]
+
+            img_bytes = base64.b64decode(base64_image)
+            nparr = np.frombuffer(img_bytes, np.uint8)
+            frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+            if frame is None:
+                print(f"[VisionService] ERROR: Failed to decode image (b64 len={len(base64_image)})")
+                return {"error": "Failed to decode image"}
+
+            print(f"[VisionService] Frame decoded: {frame.shape}, using_engine={self.using_engine}")
+
+            if self.using_engine:
+                return self._analyze_with_engine(frame)
+            elif MEDIAPIPE_AVAILABLE:
+                return self._analyze_basic(frame)
+            else:
+                return self._disabled_response()
+
+        except Exception as e:
+            logger.error(f"Frame processing error: {e}")
+            import traceback
+            traceback.print_exc()
+            return {"error": str(e)}
+
+    def _analyze_with_engine(self, frame: np.ndarray) -> Dict:
+        """Analyze frame using the full BehaviorAnalysisEngine."""
+        now = time.time()
+
+        try:
+            # Run the engine's analyze_frame
+            result = self.engine.analyze_frame(frame)
+
+            face_present = result.get('detections', {}).get('face', {}).get('face_present', False)
+            face_conf = result.get('detections', {}).get('face', {}).get('confidence', 0)
+            print(f"[VisionService] Engine result: face={face_present} (conf={face_conf:.2f}), frame #{result.get('frame_number', '?')}")
+            scores = result.get("scores", {})
+            analysis = result.get("analysis", {})
+            detections = result.get("detections", {})
+            fb = result.get("feedback", {})
+
+            # Face presence
+            face_data = detections.get("face", {})
+            presence = face_data.get("face_present", False)
+            if presence:
+                self.last_face_time = now
+
+            # Posture info
+            posture_data = analysis.get("posture", {})
+            posture_quality = posture_data.get("posture_quality")
+            posture_quality_str = posture_quality.value if hasattr(posture_quality, 'value') else str(posture_quality)
+            posture_score = posture_data.get("posture_score", 0.5)
+            posture_issues = posture_data.get("issues", [])
+            shoulder_angle = posture_data.get("shoulder_angle", 0.0)
+
+            # Eye contact / gaze info
+            gaze_data = analysis.get("eye_contact", {})
+            eye_contact_score = gaze_data.get("eye_contact_score", 0.5)
+            is_looking = gaze_data.get("is_looking_at_camera", False)
+            gaze_direction = gaze_data.get("gaze_direction")
+            gaze_dir_str = gaze_direction.value if hasattr(gaze_direction, 'value') else str(gaze_direction)
+
+            # Map eye contact to existing API format
+            if eye_contact_score >= 0.7:
+                eye_contact = "good"
+            elif eye_contact_score >= 0.4:
+                eye_contact = "moderate"
+            else:
+                eye_contact = "away"
+
+            # Attention info
+            attention_data = analysis.get("attention", {})
+            attention_score = attention_data.get("attention_score", 0.5)
+            attention_state = attention_data.get("state")
+            attention_str = attention_state.value if hasattr(attention_state, 'value') else str(attention_state)
+
+            # Movement info
+            movement_data = analysis.get("movement", {})
+            movement_score = movement_data.get("movement_score", 0.5)
+            nervousness = movement_data.get("nervousness_level")
+            nervousness_str = nervousness.value if hasattr(nervousness, 'value') else str(nervousness)
+
+            # Confidence score from engine
+            confidence_data = scores.get("confidence", {})
+            confidence_score = confidence_data.get("score", 50)
+            confidence_level = confidence_data.get("level")
+            confidence_str = confidence_level.value if hasattr(confidence_level, 'value') else str(confidence_level)
+
+            # Build feedback messages using engine feedback
+            feedback_messages = []
+            engine_msgs = fb.get("messages", [])
+            primary_feedback = fb.get("primary", None)
+
+            for msg in engine_msgs:
+                # Add emoji prefixes for consistency with existing UI
+                if "great" in msg.lower() or "excellent" in msg.lower() or "good" in msg.lower():
+                    feedback_messages.append(f"✓ {msg}")
+                elif "warning" in msg.lower() or "try" in msg.lower() or "maintain" in msg.lower():
+                    feedback_messages.append(f"⚠ {msg}")
+                else:
+                    feedback_messages.append(msg)
+
+            # Add specific feedback if engine didn't produce any
+            if not feedback_messages:
+                if presence:
+                    feedback_messages.append("✓ Face detected")
+                else:
+                    feedback_messages.append("✗ Face not detected")
+                if eye_contact == "good":
+                    feedback_messages.append("✓ Good eye contact")
+                elif eye_contact == "away":
+                    feedback_messages.append("⚠ Maintain eye contact with camera")
+                if posture_quality_str == "good":
+                    feedback_messages.append("✓ Good posture")
+                elif posture_quality_str == "poor":
+                    feedback_messages.append(f"✗ Poor posture: {', '.join(posture_issues)}")
+
+            # Overall feedback — use config thresholds
+            if confidence_score >= self.high_confidence:
+                overall = "😊 Excellent! Professional presence"
+            elif confidence_score >= self.moderate_confidence:
+                overall = "🙂 Good, minor improvements needed"
+            elif confidence_score >= 40:
+                overall = "😐 Needs attention - improve eye contact and posture"
+            else:
+                overall = "😟 Look at the camera and sit straight"
+
+            # Compute a slouch angle equivalent for backward compat
+            slouch_angle = abs(shoulder_angle) if shoulder_angle else 0.0
+
+            return {
+                "presence": presence,
+                "eye_contact": eye_contact,
+                "confidence_score": int(round(confidence_score)),
+                "posture": {
+                    "slouch_angle": round(slouch_angle, 1),
+                    "is_good": posture_quality_str in ("good", "acceptable"),
+                },
+                "head_pose": {
+                    "yaw": 0.0,  # Not directly available from pose detector
+                    "pitch": 0.0,
+                },
+                "feedback": feedback_messages,
+                "overall": overall,
+                "timestamp": now,
+                # New enhanced fields from posture engine
+                "attention_score": round(attention_score * 100, 1),
+                "attention_state": attention_str,
+                "posture_quality": posture_quality_str,
+                "posture_score": round(posture_score * 100, 1),
+                "eye_contact_score": round(eye_contact_score * 100, 1),
+                "gaze_direction": gaze_dir_str,
+                "movement_score": round(movement_score * 100, 1),
+                "nervousness_level": nervousness_str,
+                "confidence_level": confidence_str,
+            }
+
+        except Exception as e:
+            logger.error(f"Engine analysis error: {e}", exc_info=True)
+            return self._disabled_response()
+
+    def _analyze_basic(self, frame: np.ndarray) -> Dict:
+        """Fallback basic analysis using Holistic (existing behavior)."""
         image_h, image_w = frame.shape[:2]
         now = time.time()
-        
-        # If mediapipe is not available, return default metrics
-        if not self.enabled or self.holistic is None:
-            return frame, {
-                "presence": False,
-                "eye_contact": "unknown",
-                "confidence_score": 0,  # Start from 0, not 50
-                "posture": {"slouch_angle": 0.0, "is_good": True},
-                "head_pose": {"yaw": 0.0, "pitch": 0.0},
-                "gaze": {"horizontal_deviation": 50.0, "vertical_deviation": 50.0},
-                "ear": 0.0,
-                "is_likely_real": False,
-                "blink_count": 0,
-                "feedback": ["⚠ Vision analysis unavailable (mediapipe not configured)"],
-                "overall": "Vision analysis disabled",
-                "timestamp": now
-            }
-        
+
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         results = self.holistic.process(rgb)
-        
-        # Initialize metrics
+
         presence = False
         eye_contact = "unknown"
         slouch_angle = 0.0
         is_good_posture = True
-        head_pose = {"yaw": 0.0, "pitch": 0.0}
-        gaze = {"horizontal_deviation": 50.0, "vertical_deviation": 50.0, "gaze_ratio": 0.5, "vertical_gaze": 0.5}
-        ear = 0.3
-        is_likely_real = False
-        eyes_open = True
         feedback_messages = []
-        
-        logger.debug(f"[VisionService] Frame: {image_w}x{image_h}, Face: {results.face_landmarks is not None}, Pose: {results.pose_landmarks is not None}")
-        
-        # Process face landmarks if detected
+
         if results.face_landmarks:
             presence = True
             self.last_face_time = now
-            
-            # Draw face landmarks
-            self.mp_drawing.draw_landmarks(
-                frame,
-                results.face_landmarks,
-                self.mp_holistic.FACEMESH_CONTOURS,
-                landmark_drawing_spec=None,
-                connection_drawing_spec=self.mp_drawing_styles.get_default_face_mesh_contours_style()
-            )
-            
-            # Calculate Eye Aspect Ratio
-            left_ear = self.calculate_eye_aspect_ratio(self.LEFT_EYE_LANDMARKS, results.face_landmarks)
-            right_ear = self.calculate_eye_aspect_ratio(self.RIGHT_EYE_LANDMARKS, results.face_landmarks)
-            ear = (left_ear + right_ear) / 2.0
-            
-            # Detect liveness through blinking
-            is_likely_real, eyes_open = self.detect_liveness(ear)
-            
-            # Calculate gaze direction using iris tracking
-            gaze = self.calculate_gaze_direction(results.face_landmarks, image_w, image_h)
-            
-            # Calculate head pose
-            head_pose = self.head_direction_estimate(results.face_landmarks, image_w, image_h)
-            
-            # Determine eye contact quality based on gaze
-            gaze_deviation = max(gaze["horizontal_deviation"], gaze["vertical_deviation"])
-            if gaze_deviation < 10:
-                eye_contact = "good"
-                feedback_messages.append("✓ Excellent eye contact")
-            elif gaze_deviation < 25:
-                eye_contact = "moderate"
-                feedback_messages.append("⚠ Maintain eye contact with camera")
-            else:
-                eye_contact = "away"
-                feedback_messages.append("✗ Looking away from camera")
-            
-            # Liveness feedback
-            if not eyes_open:
-                feedback_messages.append("⚠ Eyes appear closed")
-            elif is_likely_real:
-                feedback_messages.append(f"✓ Blink count: {self.blink_count}")
+            eye_contact = "good"
+            feedback_messages.append("✓ Face detected")
         else:
-            if now - self.last_face_time > 2.0:
-                feedback_messages.append("✗ Face not detected - check camera position")
-        
-        # Process pose if detected
+            if now - self.last_face_time > self.face_absence_timeout:
+                feedback_messages.append("✗ Face not detected")
+
         if results.pose_landmarks:
-            # Draw pose landmarks
-            self.mp_drawing.draw_landmarks(
-                frame,
-                results.pose_landmarks,
-                self.mp_holistic.POSE_CONNECTIONS,
-                landmark_drawing_spec=self.mp_drawing_styles.get_default_pose_landmarks_style()
-            )
-            
-            # Calculate posture
-            slouch_angle = self.posture_slouch_estimate(results.pose_landmarks, image_w, image_h)
-            is_good_posture = slouch_angle <= self.GOOD_POSTURE_THRESHOLD
-            
-            if is_good_posture:
-                feedback_messages.append("✓ Good posture")
-            else:
-                feedback_messages.append(f"✗ Slouching detected ({slouch_angle:.0f}°)")
-        
-        # Calculate raw confidence score
-        raw_confidence = self.calculate_confidence_score(
-            presence, eye_contact, is_good_posture, ear, gaze, is_likely_real
-        )
-        
-        # Apply temporal smoothing
-        confidence_score = int(self.temporal_smooth_confidence(raw_confidence))
-        
-        # Overall feedback message
-        if confidence_score >= 80:
+            try:
+                ls = results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_SHOULDER]
+                rs = results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_SHOULDER]
+                lh = results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.LEFT_HIP]
+                rh = results.pose_landmarks.landmark[self.mp_holistic.PoseLandmark.RIGHT_HIP]
+
+                sm_x = (ls.x + rs.x) / 2
+                sm_y = (ls.y + rs.y) / 2
+                hm_x = (lh.x + rh.x) / 2
+                hm_y = (lh.y + rh.y) / 2
+
+                slouch_angle = abs(np.degrees(np.arctan2(sm_x - hm_x, sm_y - hm_y)))
+                is_good_posture = slouch_angle <= self.posture_upright_threshold
+
+                if is_good_posture:
+                    feedback_messages.append("✓ Good posture")
+                else:
+                    feedback_messages.append(f"✗ Slouching detected ({slouch_angle:.0f}°)")
+            except Exception:
+                pass
+
+        # Simple confidence calculation
+        raw_score = 0
+        if presence:
+            raw_score += 30
+        if eye_contact == "good":
+            raw_score += 30
+        if is_good_posture:
+            raw_score += 20
+        raw_score += 20  # Base points for showing up
+
+        self.confidence_history.append(raw_score)
+        confidence = int(sum(self.confidence_history) / len(self.confidence_history))
+
+        if confidence >= self.high_confidence:
             overall = "😊 Excellent! Professional presence"
-        elif confidence_score >= 60:
+        elif confidence >= self.moderate_confidence:
             overall = "🙂 Good, minor improvements needed"
-        elif confidence_score >= 40:
-            overall = "😐 Needs attention - improve eye contact"
+        elif confidence >= 40:
+            overall = "😐 Needs attention"
         else:
             overall = "😟 Look at the camera and sit straight"
-        
-        # === DRAW ALL METRICS ON FRAME ===
-        
-        # Header background
-        cv2.rectangle(frame, (0, 0), (image_w, 60), (0, 0, 0), -1)
-        
-        # Title
-        cv2.putText(frame, "Interview Behavior Analysis", (10, 30),
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
-        
-        # Confidence bar
-        self.draw_text_with_background(frame, "Confidence:", (10, 55), 
-                                       font_scale=0.5, bg_color=(40, 40, 40))
-        self.draw_confidence_bar(frame, confidence_score, 120, 40)
-        
-        # Status indicators
-        y_offset = 100
-        self.draw_status_indicator(frame, 'good' if presence else 'poor', 
-                                   "Presence", 10, y_offset)
-        self.draw_status_indicator(frame, eye_contact, 
-                                   "Eye Contact", 10, y_offset + 30)
-        self.draw_status_indicator(frame, 'good' if is_good_posture else 'poor', 
-                                   "Posture", 10, y_offset + 60)
-        self.draw_status_indicator(frame, 'good' if is_likely_real else 'moderate', 
-                                   "Liveness", 10, y_offset + 90)
-        
-        # Metrics panel (right side)
-        panel_x = image_w - 280
-        panel_y = 80
-        
-        # Draw semi-transparent panel
-        overlay = frame.copy()
-        cv2.rectangle(overlay, (panel_x - 10, panel_y - 10), 
-                     (image_w - 10, panel_y + 220), (0, 0, 0), -1)
-        cv2.addWeighted(overlay, 0.7, frame, 0.3, 0, frame)
-        
-        # Metrics text
-        cv2.putText(frame, "DETAILED METRICS", (panel_x, panel_y), 
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 0), 2)
-        
-        cv2.putText(frame, f"Head Yaw: {head_pose['yaw']:.1f}°", (panel_x, panel_y + 30),
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-        cv2.putText(frame, f"Head Pitch: {head_pose['pitch']:.1f}°", (panel_x, panel_y + 55),
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-        cv2.putText(frame, f"Gaze H-Dev: {gaze['horizontal_deviation']:.1f}%", (panel_x, panel_y + 80),
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-        cv2.putText(frame, f"Gaze V-Dev: {gaze['vertical_deviation']:.1f}%", (panel_x, panel_y + 105),
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-        cv2.putText(frame, f"Eye Aspect Ratio: {ear:.2f}", (panel_x, panel_y + 130),
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-        cv2.putText(frame, f"Slouch Angle: {slouch_angle:.1f}°", (panel_x, panel_y + 155),
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-        cv2.putText(frame, f"Blinks: {self.blink_count}", (panel_x, panel_y + 180),
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-        
-        score_color = (0, 255, 0) if confidence_score >= 70 else (0, 255, 255) if confidence_score >= 40 else (0, 0, 255)
-        cv2.putText(frame, f"Score: {confidence_score}/100", (panel_x, panel_y + 205),
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.6, score_color, 2)
-        
-        # Feedback messages (bottom)
-        feedback_y = image_h - 140
-        cv2.rectangle(frame, (0, feedback_y - 10), (image_w, image_h), (0, 0, 0), -1)
-        
-        cv2.putText(frame, overall, (10, feedback_y + 10),
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 0), 2)
-        
-        for i, msg in enumerate(feedback_messages[:4]):
-            color = (0, 255, 0) if msg.startswith("✓") else (0, 255, 255) if msg.startswith("⚠") else (100, 100, 255)
-            cv2.putText(frame, msg, (10, feedback_y + 40 + i * 25),
-                       cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
-        
-        # Return both annotated frame and metrics
-        return frame, {
+
+        return {
             "presence": presence,
             "eye_contact": eye_contact,
-            "confidence_score": confidence_score,
+            "confidence_score": confidence,
             "posture": {
-                "slouch_angle": slouch_angle,
-                "is_good": is_good_posture
+                "slouch_angle": round(slouch_angle, 1),
+                "is_good": is_good_posture,
             },
-            "head_pose": head_pose,
-            "gaze": gaze,
-            "ear": ear,
-            "is_likely_real": is_likely_real,
-            "blink_count": self.blink_count,
+            "head_pose": {"yaw": 0.0, "pitch": 0.0},
             "feedback": feedback_messages,
             "overall": overall,
-            "timestamp": now
+            "timestamp": now,
         }
-    
-    def process_base64_frame(self, base64_image: str) -> Dict:
-        """Process base64 image and return metrics (for API)."""
-        try:
-            if "base64," in base64_image:
-                base64_image = base64_image.split("base64,")[1]
-            
-            img_bytes = base64.b64decode(base64_image)
-            nparr = np.frombuffer(img_bytes, np.uint8)
-            frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-            
-            if frame is None:
-                return {"error": "Failed to decode image"}
-            
-            # Get metrics without visualization (for API response)
-            _, metrics = self.analyze_frame_with_visualization(frame)
-            return metrics
-            
-        except Exception as e:
-            logger.error(f"Frame processing error: {e}")
-            return {"error": str(e)}
-    
+
+    def _disabled_response(self) -> Dict:
+        """Return default response when analysis is disabled."""
+        return {
+            "presence": False,
+            "eye_contact": "unknown",
+            "confidence_score": 0,
+            "posture": {"slouch_angle": 0.0, "is_good": True},
+            "head_pose": {"yaw": 0.0, "pitch": 0.0},
+            "feedback": ["⚠ Vision analysis unavailable (engine not configured)"],
+            "overall": "Vision analysis disabled",
+            "timestamp": time.time(),
+        }
+
     def reset_session(self):
-        """Reset session-specific tracking (call when new interview starts)."""
-        self.blink_count = 0
-        self.last_blink_time = time.time()
-        self.eyes_were_closed = False
+        """Reset session-specific tracking."""
         self.confidence_history.clear()
-        self.ear_history.clear()
-        self.gaze_history.clear()
-    
+        if self.using_engine and self.engine:
+            self.engine.reset()
+            self.engine.start_session()
+
+    def get_session_report(self) -> Optional[Dict]:
+        """Get session report from the engine (new feature)."""
+        if self.using_engine and self.engine:
+            return self.engine.end_session()
+        return None
+
     def close(self):
         """Cleanup resources."""
-        if self.holistic:
-            self.holistic.close()
+        if self.using_engine and self.engine:
+            self.engine.close()
+
+    # Legacy compatibility - analyze_frame_with_visualization
+    def analyze_frame_with_visualization(self, frame):
+        """Analyze frame and return (frame, metrics) for backward compat."""
+        metrics = self.process_base64_frame(
+            base64.b64encode(cv2.imencode('.jpg', frame)[1]).decode()
+        )
+        return frame, metrics

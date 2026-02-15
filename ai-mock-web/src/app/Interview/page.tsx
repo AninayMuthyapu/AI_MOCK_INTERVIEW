@@ -269,6 +269,8 @@ export default function InterviewPage() {
     setRoundType(data.questionData.type);
     setIsComplete(data.isComplete);
     setUserAnswer("");
+    setCurrentHint(null);
+    setShowHint(false);
     setFeedback(data.feedback ?? null);
     setSoftSkills(data.softSkills ?? null);
     setShowFeedback(!!data.feedback);

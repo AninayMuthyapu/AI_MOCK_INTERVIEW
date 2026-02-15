@@ -21,6 +21,16 @@ interface BehaviorFeedback {
   feedback: string[];
   overall: string;
   timestamp: number;
+  // Enhanced fields from posture engine
+  attention_score?: number;
+  attention_state?: string;
+  posture_quality?: string;
+  posture_score?: number;
+  eye_contact_score?: number;
+  gaze_direction?: string;
+  movement_score?: number;
+  nervousness_level?: string;
+  confidence_level?: string;
 }
 
 interface BehaviorMonitorProps {
@@ -29,26 +39,35 @@ interface BehaviorMonitorProps {
   onFeedbackUpdate?: (feedback: BehaviorFeedback) => void;
 }
 
-export default function BehaviorMonitor({ 
-  sessionId, 
+export default function BehaviorMonitor({
+  sessionId,
   isActive = true,
-  onFeedbackUpdate 
+  onFeedbackUpdate
 }: BehaviorMonitorProps) {
-  console.log("[BehaviorMonitor] Component mounted/updated", { sessionId, isActive });
-  
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [feedback, setFeedback] = useState<BehaviorFeedback | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const isAnalyzingRef = useRef(false); // Use ref instead of state to avoid closure issues
+  const isAnalyzingRef = useRef(false);
+  const errorCountRef = useRef(0);
+  const maxConsecutiveErrors = 5;
+  const isMountedRef = useRef(true);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // Store callback in a ref so it never triggers effect restarts
+  const onFeedbackUpdateRef = useRef(onFeedbackUpdate);
+  onFeedbackUpdateRef.current = onFeedbackUpdate;
+
+  // Track mount/unmount
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
+  }, []);
 
   // Force initialization to complete after 3 seconds
   useEffect(() => {
     const timer = setTimeout(() => {
       if (isInitializing) {
-        console.log("Force completing initialization");
         setIsInitializing(false);
       }
     }, 3000);
@@ -64,7 +83,7 @@ export default function BehaviorMonitor({
         stream = await navigator.mediaDevices.getUserMedia({
           video: { width: 640, height: 480 }
         });
-        
+
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
           videoRef.current.onloadedmetadata = () => {
@@ -89,133 +108,100 @@ export default function BehaviorMonitor({
     };
   }, [isActive]);
 
-  // Capture and analyze frames
+  // Capture and analyze frames using chained setTimeout
+  // (next frame only starts AFTER previous analysis finishes + delay)
   useEffect(() => {
-    console.log("[BehaviorMonitor] useEffect triggered", { 
-      isActive, 
-      hasVideo: !!videoRef.current, 
-      hasCanvas: !!canvasRef.current,
-      hasInterval: !!intervalRef.current 
-    });
-    
-    if (!isActive) {
-      console.log("[BehaviorMonitor] Not active, skipping");
-      return;
-    }
+    if (!isActive) return;
+    if (!videoRef.current || !canvasRef.current) return;
 
-    // Wait for refs to be ready
-    if (!videoRef.current || !canvasRef.current) {
-      console.log("[BehaviorMonitor] Refs not ready yet, will retry");
-      return;
-    }
-
-    // Prevent multiple intervals
-    if (intervalRef.current) {
-      console.log("[BehaviorMonitor] Interval already running, skipping");
-      return;
-    }
-
-    console.log("[BehaviorMonitor] ✓ Starting analysis interval NOW!");
+    let cancelled = false;
 
     const analyzeFrame = async () => {
-      console.log("[BehaviorMonitor] analyzeFrame called, isAnalyzingRef.current:", isAnalyzingRef.current);
-      if (isAnalyzingRef.current || !videoRef.current || !canvasRef.current) {
-        console.log("[BehaviorMonitor] Skipping frame - already analyzing or refs missing");
-        return;
-      }
+      if (cancelled || !isMountedRef.current) return;
+      if (!videoRef.current || !canvasRef.current) return;
 
-      isAnalyzingRef.current = true;
-      
       try {
         const canvas = canvasRef.current;
         const video = videoRef.current;
-        
+
         // Check if video is ready
         if (!video.videoWidth || !video.videoHeight) {
-          console.log("Video not ready yet");
-          isAnalyzingRef.current = false;
+          scheduleNext();
           return;
         }
-        
-        // Mark as initialized once we can capture frames
+
         if (isInitializing) {
           setIsInitializing(false);
         }
-        
+
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
-        
+
         const ctx = canvas.getContext("2d");
         if (!ctx) {
-          console.error("Could not get canvas context");
-          isAnalyzingRef.current = false;
+          scheduleNext();
           return;
         }
-        
+
         ctx.drawImage(video, 0, 0);
-        const imageData = canvas.toDataURL("image/jpeg", 0.8);
-        
-        console.log("Sending frame for analysis, size:", imageData.length);
+        const imageData = canvas.toDataURL("image/jpeg", 0.7);
+
+        const controller = new AbortController();
+        const fetchTimeout = setTimeout(() => controller.abort(), 8000);
 
         const response = await fetch(`${API_BASE}/api/analyze-behavior`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            image: imageData,
-            sessionId: sessionId
-          }),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ image: imageData, sessionId }),
+          signal: controller.signal,
         });
 
+        clearTimeout(fetchTimeout);
+
         if (!response.ok) {
-          const errorText = await response.text();
-          console.error("API error:", response.status, errorText);
           throw new Error(`Analysis failed: ${response.status}`);
         }
 
         const data: BehaviorFeedback = await response.json();
-        console.log("Received feedback:", data);
-        
-        // Validate response has required fields
-        if (data && typeof data.confidence_score === 'number') {
-          console.log("✅ Setting feedback state with valid data");
+
+        if (!cancelled && data && typeof data.confidence_score === 'number') {
           setFeedback(data);
+          errorCountRef.current = 0;
           setError(null);
-        } else {
-          console.error("❌ Invalid feedback format:", data);
-          setError("Invalid response format");
         }
-        
-        if (onFeedbackUpdate) {
-          onFeedbackUpdate(data);
+
+        if (!cancelled && onFeedbackUpdateRef.current) {
+          onFeedbackUpdateRef.current(data);
         }
       } catch (err) {
-        console.error("Error analyzing frame:", err);
-        setError(`Analysis error: ${err instanceof Error ? err.message : 'Unknown error'}`);
-      } finally {
-        isAnalyzingRef.current = false;
+        if (cancelled) return;
+        errorCountRef.current += 1;
+        console.error(`[BehaviorMonitor] Error #${errorCountRef.current}:`, err);
+        if (errorCountRef.current >= maxConsecutiveErrors) {
+          setError(`Analysis error: ${err instanceof Error ? err.message : 'Unknown error'}`);
+        }
       }
+
+      // Always schedule next frame, even after errors
+      scheduleNext();
     };
 
-    // Wait for video to be ready, then start analyzing
-    const startTimer = setTimeout(() => {
-      console.log("[BehaviorMonitor] Starting first analysis after delay");
-      analyzeFrame();
-    }, 500); // Wait 0.5 seconds for video to load
-    
-    // Then analyze every 1 second for more dynamic updates
-    intervalRef.current = setInterval(analyzeFrame, 1000);
+    const scheduleNext = () => {
+      if (cancelled || !isMountedRef.current) return;
+      timeoutRef.current = setTimeout(analyzeFrame, 1500);
+    };
+
+    // Initial delay then start
+    timeoutRef.current = setTimeout(analyzeFrame, 500);
 
     return () => {
-      console.log("[BehaviorMonitor] Cleanup - clearing interval and timer");
-      clearTimeout(startTimer);
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null; // IMPORTANT: Reset to null
+      cancelled = true;
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
       }
     };
-  }, [isActive, sessionId, onFeedbackUpdate]); // Removed isAnalyzing from deps to prevent interval recreation
+  }, [isActive, sessionId]); // No onFeedbackUpdate — stored in ref
 
   if (!isActive) {
     return (
@@ -266,13 +252,12 @@ export default function BehaviorMonitor({
                 <div className="flex items-center gap-1">
                   <div className="w-20 h-2 bg-gray-700 rounded-full overflow-hidden">
                     <div
-                      className={`h-full transition-all ${
-                        feedback.confidence_score >= 70
-                          ? "bg-green-500"
-                          : feedback.confidence_score >= 50
+                      className={`h-full transition-all ${feedback.confidence_score >= 70
+                        ? "bg-green-500"
+                        : feedback.confidence_score >= 50
                           ? "bg-yellow-500"
                           : "bg-red-500"
-                      }`}
+                        }`}
                       style={{ width: `${feedback.confidence_score}%` }}
                     />
                   </div>
@@ -294,22 +279,21 @@ export default function BehaviorMonitor({
                 const isPositive = msg.startsWith("✓");
                 const isWarning = msg.startsWith("⚠");
                 const isError = msg.startsWith("❌");
-                
+
                 return (
                   <motion.div
                     key={idx}
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: idx * 0.1 }}
-                    className={`flex items-start gap-2 p-2 rounded ${
-                      isPositive
-                        ? "bg-green-500/10 border border-green-500/20"
-                        : isWarning
+                    className={`flex items-start gap-2 p-2 rounded ${isPositive
+                      ? "bg-green-500/10 border border-green-500/20"
+                      : isWarning
                         ? "bg-yellow-500/10 border border-yellow-500/20"
                         : isError
-                        ? "bg-red-500/10 border border-red-500/20"
-                        : "bg-gray-500/10 border border-gray-500/20"
-                    }`}
+                          ? "bg-red-500/10 border border-red-500/20"
+                          : "bg-gray-500/10 border border-gray-500/20"
+                      }`}
                   >
                     {isPositive && <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />}
                     {(isWarning || isError) && <AlertCircle className="w-4 h-4 text-yellow-400 flex-shrink-0 mt-0.5" />}
@@ -323,53 +307,142 @@ export default function BehaviorMonitor({
             <div className="mt-3 pt-3 border-t border-gray-700 grid grid-cols-3 gap-2 text-xs">
               <div>
                 <span className="text-gray-400">Eye Contact:</span>
-                <span className={`ml-1 font-semibold ${
-                  feedback.eye_contact === "good" ? "text-green-400" : "text-yellow-400"
-                }`}>
+                <span className={`ml-1 font-semibold ${feedback.eye_contact === "good" ? "text-green-400" : "text-yellow-400"
+                  }`}>
                   {feedback.eye_contact === "good" ? "Good" : "Away"}
                 </span>
               </div>
               <div>
                 <span className="text-gray-400">Posture:</span>
-                <span className={`ml-1 font-semibold ${
-                  feedback.posture.is_good ? "text-green-400" : "text-yellow-400"
-                }`}>
+                <span className={`ml-1 font-semibold ${feedback.posture.is_good ? "text-green-400" : "text-yellow-400"
+                  }`}>
                   {feedback.posture.is_good ? "Good" : "Slouching"}
                 </span>
               </div>
               <div>
                 <span className="text-gray-400">Presence:</span>
-                <span className={`ml-1 font-semibold ${
-                  feedback.presence ? "text-green-400" : "text-red-400"
-                }`}>
+                <span className={`ml-1 font-semibold ${feedback.presence ? "text-green-400" : "text-red-400"
+                  }`}>
                   {feedback.presence ? "Yes" : "No"}
                 </span>
               </div>
             </div>
 
-            {/* Detailed Angles */}
-            <div className="mt-3 pt-3 border-t border-gray-700">
-              <div className="text-xs text-gray-400 mb-2 font-semibold">📐 Detailed Metrics</div>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="bg-gray-800/50 p-2 rounded">
-                  <span className="text-gray-400">Head Yaw:</span>
-                  <span className="ml-1 text-blue-300 font-mono">{feedback.head_pose?.yaw?.toFixed(1) || '0.0'}°</span>
+            {/* Enhanced Metrics from Posture Engine */}
+            {(feedback.attention_score !== undefined || feedback.posture_score !== undefined || feedback.movement_score !== undefined) && (
+              <div className="mt-3 pt-3 border-t border-gray-700">
+                <div className="text-xs text-gray-400 mb-2 font-semibold">🎯 Behavioral Analysis</div>
+                <div className="space-y-2">
+                  {feedback.attention_score !== undefined && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-400">Attention</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-16 h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full transition-all ${feedback.attention_score >= 70 ? 'bg-green-500' : feedback.attention_score >= 40 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                            style={{ width: `${feedback.attention_score}%` }}
+                          />
+                        </div>
+                        <span className="text-xs font-mono text-white w-8 text-right">{feedback.attention_score?.toFixed(0)}%</span>
+                      </div>
+                    </div>
+                  )}
+                  {feedback.posture_score !== undefined && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-400">Posture</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-16 h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full transition-all ${feedback.posture_score >= 70 ? 'bg-green-500' : feedback.posture_score >= 40 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                            style={{ width: `${feedback.posture_score}%` }}
+                          />
+                        </div>
+                        <span className="text-xs font-mono text-white w-8 text-right">{feedback.posture_score?.toFixed(0)}%</span>
+                      </div>
+                    </div>
+                  )}
+                  {feedback.eye_contact_score !== undefined && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-400">Eye Contact</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-16 h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full transition-all ${feedback.eye_contact_score >= 70 ? 'bg-green-500' : feedback.eye_contact_score >= 40 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                            style={{ width: `${feedback.eye_contact_score}%` }}
+                          />
+                        </div>
+                        <span className="text-xs font-mono text-white w-8 text-right">{feedback.eye_contact_score?.toFixed(0)}%</span>
+                      </div>
+                    </div>
+                  )}
+                  {feedback.movement_score !== undefined && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-400">Stability</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-16 h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full transition-all ${feedback.movement_score >= 70 ? 'bg-green-500' : feedback.movement_score >= 40 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                            style={{ width: `${feedback.movement_score}%` }}
+                          />
+                        </div>
+                        <span className="text-xs font-mono text-white w-8 text-right">{feedback.movement_score?.toFixed(0)}%</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div className="bg-gray-800/50 p-2 rounded">
-                  <span className="text-gray-400">Head Pitch:</span>
-                  <span className="ml-1 text-blue-300 font-mono">{feedback.head_pose?.pitch?.toFixed(1) || '0.0'}°</span>
-                </div>
-                <div className="bg-gray-800/50 p-2 rounded col-span-2">
-                  <span className="text-gray-400">Slouch Angle:</span>
-                  <span className={`ml-1 font-mono ${
-                    feedback.posture.slouch_angle <= 20 ? "text-green-400" : "text-yellow-400"
-                  }`}>
-                    {feedback.posture.slouch_angle?.toFixed(1) || '0.0'}°
-                  </span>
-                  <span className="ml-2 text-gray-500 text-xs">(≤20° is good)</span>
+                {/* Status Tags */}
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {feedback.posture_quality && (
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${feedback.posture_quality === 'good' ? 'bg-green-500/20 text-green-300' :
+                      feedback.posture_quality === 'acceptable' ? 'bg-yellow-500/20 text-yellow-300' :
+                        'bg-red-500/20 text-red-300'
+                      }`}>
+                      {feedback.posture_quality}
+                    </span>
+                  )}
+                  {feedback.nervousness_level && (
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${feedback.nervousness_level === 'calm' ? 'bg-green-500/20 text-green-300' :
+                      feedback.nervousness_level === 'slightly_nervous' ? 'bg-yellow-500/20 text-yellow-300' :
+                        'bg-red-500/20 text-red-300'
+                      }`}>
+                      {feedback.nervousness_level.replace(/_/g, ' ')}
+                    </span>
+                  )}
+                  {feedback.gaze_direction && feedback.gaze_direction !== 'unknown' && (
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${feedback.gaze_direction === 'center' ? 'bg-green-500/20 text-green-300' :
+                      'bg-yellow-500/20 text-yellow-300'
+                      }`}>
+                      gaze: {feedback.gaze_direction}
+                    </span>
+                  )}
                 </div>
               </div>
-            </div>
+            )}
+
+            {/* Legacy Detailed Angles (shown when engine metrics not available) */}
+            {feedback.attention_score === undefined && (
+              <div className="mt-3 pt-3 border-t border-gray-700">
+                <div className="text-xs text-gray-400 mb-2 font-semibold">📐 Detailed Metrics</div>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="bg-gray-800/50 p-2 rounded">
+                    <span className="text-gray-400">Head Yaw:</span>
+                    <span className="ml-1 text-blue-300 font-mono">{feedback.head_pose?.yaw?.toFixed(1) || '0.0'}°</span>
+                  </div>
+                  <div className="bg-gray-800/50 p-2 rounded">
+                    <span className="text-gray-400">Head Pitch:</span>
+                    <span className="ml-1 text-blue-300 font-mono">{feedback.head_pose?.pitch?.toFixed(1) || '0.0'}°</span>
+                  </div>
+                  <div className="bg-gray-800/50 p-2 rounded col-span-2">
+                    <span className="text-gray-400">Slouch Angle:</span>
+                    <span className={`ml-1 font-mono ${feedback.posture.slouch_angle <= 20 ? "text-green-400" : "text-yellow-400"
+                      }`}>
+                      {feedback.posture.slouch_angle?.toFixed(1) || '0.0'}°
+                    </span>
+                    <span className="ml-2 text-gray-500 text-xs">(≤20° is good)</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

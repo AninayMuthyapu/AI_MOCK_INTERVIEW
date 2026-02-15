@@ -1,0 +1,2977 @@
+{
+  "report_metadata": {
+    "generated_at": "2026-02-04T21:56:35.461789",
+    "report_version": "1.0",
+    "session_id": "session_1770222395461"
+  },
+  "session_summary": {
+    "duration_seconds": 95.5,
+    "frames_analyzed": 1359
+  },
+  "behavioral_metrics": {
+    "confidence": {
+      "average_score": 95.0,
+      "label": "High Confidence"
+    },
+    "eye_contact": {
+      "percentage": 87.8,
+      "rating": "Excellent"
+    },
+    "posture": {
+      "quality_score": 67.5,
+      "rating": "Good"
+    },
+    "stability": {
+      "movement_score": 48.3,
+      "rating": "Fair"
+    }
+  },
+  "behavioral_events": {
+    "distraction_events": 0
+  },
+  "overall_assessment": {
+    "readiness_score": 77.0,
+    "readiness_label": "Moderately Ready",
+    "recommendations": [
+      "Try to minimize unnecessary movements. Take deep breaths before speaking to help stay calm and composed."
+    ]
+  },
+  "time_series": {
+    "confidence": [
+      {
+        "time": 1.0576508045196533,
+        "score": 73.9,
+        "level": "ConfidenceLevel.MODERATE"
+      },
+      {
+        "time": 2.0654730796813965,
+        "score": 73.7,
+        "level": "ConfidenceLevel.MODERATE"
+      },
+      {
+        "time": 3.0755038261413574,
+        "score": 73.3,
+        "level": "ConfidenceLevel.MODERATE"
+      },
+      {
+        "time": 4.151896715164185,
+        "score": 73.7,
+        "level": "ConfidenceLevel.MODERATE"
+      },
+      {
+        "time": 5.2219579219818115,
+        "score": 75.2,
+        "level": "ConfidenceLevel.MODERATE"
+      },
+      {
+        "time": 6.245765924453735,
+        "score": 77.0,
+        "level": "ConfidenceLevel.MODERATE"
+      },
+      {
+        "time": 7.310151815414429,
+        "score": 78.9,
+        "level": "ConfidenceLevel.MODERATE"
+      },
+      {
+        "time": 8.312258005142212,
+        "score": 80.1,
+        "level": "ConfidenceLevel.MODERATE"
+      },
+      {
+        "time": 9.385297775268555,
+        "score": 80.0,
+        "level": "ConfidenceLevel.MODERATE"
+      },
+      {
+        "time": 10.419116020202637,
+        "score": 80.2,
+        "level": "ConfidenceLevel.MODERATE"
+      },
+      {
+        "time": 11.42129898071289,
+        "score": 81.6,
+        "level": "ConfidenceLevel.MODERATE"
+      },
+      {
+        "time": 12.447464942932129,
+        "score": 83.4,
+        "level": "ConfidenceLevel.MODERATE"
+      },
+      {
+        "time": 13.481420755386353,
+        "score": 85.3,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 14.548667907714844,
+        "score": 87.1,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 15.610816955566406,
+        "score": 89.0,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 16.644998788833618,
+        "score": 90.6,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 17.712329864501953,
+        "score": 92.0,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 18.713231801986694,
+        "score": 92.6,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 19.713751077651978,
+        "score": 93.7,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 20.71773386001587,
+        "score": 95.2,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 21.71850872039795,
+        "score": 96.9,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 22.720316886901855,
+        "score": 98.7,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 23.72875189781189,
+        "score": 99.8,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 24.78979992866516,
+        "score": 100.0,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 25.82278299331665,
+        "score": 100.0,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 26.839853763580322,
+        "score": 100.0,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 27.8626708984375,
+        "score": 100.0,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 28.92759609222412,
+        "score": 100.0,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 29.9669246673584,
+        "score": 100.0,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 30.992453813552856,
+        "score": 100.0,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 31.998934030532837,
+        "score": 100.0,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 33.002840757369995,
+        "score": 100.0,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 34.06221079826355,
+        "score": 100.0,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 35.10844278335571,
+        "score": 100.0,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 36.1124849319458,
+        "score": 100.0,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 37.176944971084595,
+        "score": 100.0,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 38.23297190666199,
+        "score": 100.0,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 39.26805782318115,
+        "score": 100.0,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 40.28346276283264,
+        "score": 100.0,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 41.29856491088867,
+        "score": 99.7,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 42.30067992210388,
+        "score": 99.2,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 43.36155891418457,
+        "score": 98.6,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 44.36771368980408,
+        "score": 98.2,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 45.370728969573975,
+        "score": 97.9,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 46.431005001068115,
+        "score": 98.7,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 47.49611282348633,
+        "score": 99.7,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 48.508386850357056,
+        "score": 99.6,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 49.513956785202026,
+        "score": 99.1,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 50.581377029418945,
+        "score": 98.7,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 51.617522954940796,
+        "score": 98.1,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 52.635663747787476,
+        "score": 97.7,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 53.6496467590332,
+        "score": 97.1,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 54.68264603614807,
+        "score": 96.6,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 55.71874475479126,
+        "score": 96.1,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 56.79139590263367,
+        "score": 95.7,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 57.846253871917725,
+        "score": 95.3,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 58.85280799865723,
+        "score": 94.9,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 59.88674998283386,
+        "score": 94.5,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 60.95433688163757,
+        "score": 94.8,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 61.99403786659241,
+        "score": 96.1,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 63.049728870391846,
+        "score": 97.9,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 64.05294990539551,
+        "score": 98.6,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 65.08835673332214,
+        "score": 98.3,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 66.15766668319702,
+        "score": 98.5,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 67.18394684791565,
+        "score": 98.7,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 68.2213487625122,
+        "score": 98.2,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 69.2857620716095,
+        "score": 97.7,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 70.28750586509705,
+        "score": 97.8,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 71.32752585411072,
+        "score": 98.9,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 72.38728189468384,
+        "score": 99.8,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 73.45216107368469,
+        "score": 99.7,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 74.4600567817688,
+        "score": 99.2,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 75.52550506591797,
+        "score": 98.7,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 76.55565476417542,
+        "score": 98.2,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 77.59121894836426,
+        "score": 97.7,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 78.62808084487915,
+        "score": 97.2,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 79.66564774513245,
+        "score": 96.6,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 80.73255777359009,
+        "score": 96.1,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 81.77527499198914,
+        "score": 95.6,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 82.83409881591797,
+        "score": 95.1,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 83.87122797966003,
+        "score": 95.5,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 84.89426589012146,
+        "score": 96.7,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 85.90137076377869,
+        "score": 97.7,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 86.90416693687439,
+        "score": 97.6,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 87.97157669067383,
+        "score": 97.7,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 88.99724698066711,
+        "score": 98.8,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 90.00636982917786,
+        "score": 99.8,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 91.06638884544373,
+        "score": 100.0,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 92.12068200111389,
+        "score": 100.0,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 93.17592787742615,
+        "score": 100.0,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 94.23103475570679,
+        "score": 100.0,
+        "level": "ConfidenceLevel.HIGH"
+      },
+      {
+        "time": 95.23355388641357,
+        "score": 100.0,
+        "level": "ConfidenceLevel.HIGH"
+      }
+    ],
+    "attention": [
+      {
+        "time": 1.0576508045196533,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 2.0654730796813965,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 3.0755038261413574,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 4.151896715164185,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 5.2219579219818115,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 6.245765924453735,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 7.310151815414429,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 8.312258005142212,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 9.385297775268555,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 10.419116020202637,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 11.42129898071289,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 12.447464942932129,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 13.481420755386353,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 14.548667907714844,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 15.610816955566406,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 16.644998788833618,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 17.712329864501953,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 18.713231801986694,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 19.713751077651978,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 20.71773386001587,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 21.71850872039795,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 22.720316886901855,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 23.72875189781189,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 24.78979992866516,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 25.82278299331665,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 26.839853763580322,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 27.8626708984375,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 28.92759609222412,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 29.9669246673584,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 30.992453813552856,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 31.998934030532837,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 33.002840757369995,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 34.06221079826355,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 35.10844278335571,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 36.1124849319458,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 37.176944971084595,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 38.23297190666199,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 39.26805782318115,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 40.28346276283264,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 41.29856491088867,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 42.30067992210388,
+        "state": "temporarily_distracted",
+        "score": 0.6359820365905762
+      },
+      {
+        "time": 43.36155891418457,
+        "state": "temporarily_distracted",
+        "score": 0.3
+      },
+      {
+        "time": 44.36771368980408,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 45.370728969573975,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 46.431005001068115,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 47.49611282348633,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 48.508386850357056,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 49.513956785202026,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 50.581377029418945,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 51.617522954940796,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 52.635663747787476,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 53.6496467590332,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 54.68264603614807,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 55.71874475479126,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 56.79139590263367,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 57.846253871917725,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 58.85280799865723,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 59.88674998283386,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 60.95433688163757,
+        "state": "temporarily_distracted",
+        "score": 0.71612548828125
+      },
+      {
+        "time": 61.99403786659241,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 63.049728870391846,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 64.05294990539551,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 65.08835673332214,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 66.15766668319702,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 67.18394684791565,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 68.2213487625122,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 69.2857620716095,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 70.28750586509705,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 71.32752585411072,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 72.38728189468384,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 73.45216107368469,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 74.4600567817688,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 75.52550506591797,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 76.55565476417542,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 77.59121894836426,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 78.62808084487915,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 79.66564774513245,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 80.73255777359009,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 81.77527499198914,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 82.83409881591797,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 83.87122797966003,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 84.89426589012146,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 85.90137076377869,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 86.90416693687439,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 87.97157669067383,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 88.99724698066711,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 90.00636982917786,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 91.06638884544373,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 92.12068200111389,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 93.17592787742615,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 94.23103475570679,
+        "state": "fully_attentive",
+        "score": 1.0
+      },
+      {
+        "time": 95.23355388641357,
+        "state": "fully_attentive",
+        "score": 1.0
+      }
+    ],
+    "posture": [
+      {
+        "time": 1.0576508045196533,
+        "quality": "unknown",
+        "score": 0.5,
+        "issues": []
+      },
+      {
+        "time": 2.0654730796813965,
+        "quality": "unknown",
+        "score": 0.5,
+        "issues": []
+      },
+      {
+        "time": 3.0755038261413574,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 4.151896715164185,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 5.2219579219818115,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_right",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 6.245765924453735,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 7.310151815414429,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "right_shoulder_low",
+          "head_tilted_right",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 8.312258005142212,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "right_shoulder_low",
+          "head_tilted_right",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 9.385297775268555,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "right_shoulder_low",
+          "head_tilted_right",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 10.419116020202637,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "right_shoulder_low",
+          "head_tilted_right",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 11.42129898071289,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "right_shoulder_low",
+          "head_tilted_right",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 12.447464942932129,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "right_shoulder_low",
+          "head_tilted_right",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 13.481420755386353,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 14.548667907714844,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 15.610816955566406,
+        "quality": "poor",
+        "score": 0.758,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_forward"
+        ]
+      },
+      {
+        "time": 16.644998788833618,
+        "quality": "poor",
+        "score": 0.7699999999999999,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left"
+        ]
+      },
+      {
+        "time": 17.712329864501953,
+        "quality": "poor",
+        "score": 0.6500000000000001,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_forward"
+        ]
+      },
+      {
+        "time": 18.713231801986694,
+        "quality": "poor",
+        "score": 0.7699999999999999,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left"
+        ]
+      },
+      {
+        "time": 19.713751077651978,
+        "quality": "poor",
+        "score": 0.7699999999999999,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left"
+        ]
+      },
+      {
+        "time": 20.71773386001587,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 21.71850872039795,
+        "quality": "poor",
+        "score": 0.74,
+        "issues": [
+          "right_shoulder_low",
+          "head_tilted_left"
+        ]
+      },
+      {
+        "time": 22.720316886901855,
+        "quality": "poor",
+        "score": 0.71,
+        "issues": [
+          "right_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 23.72875189781189,
+        "quality": "poor",
+        "score": 0.7299999999999999,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left"
+        ]
+      },
+      {
+        "time": 24.78979992866516,
+        "quality": "poor",
+        "score": 0.68,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left"
+        ]
+      },
+      {
+        "time": 25.82278299331665,
+        "quality": "poor",
+        "score": 0.7699999999999999,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left"
+        ]
+      },
+      {
+        "time": 26.839853763580322,
+        "quality": "poor",
+        "score": 0.7699999999999999,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_right"
+        ]
+      },
+      {
+        "time": 27.8626708984375,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 28.92759609222412,
+        "quality": "poor",
+        "score": 0.73,
+        "issues": [
+          "right_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 29.9669246673584,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 30.992453813552856,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 31.998934030532837,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "right_shoulder_low",
+          "head_tilted_right",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 33.002840757369995,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "right_shoulder_low",
+          "head_tilted_right",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 34.06221079826355,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "right_shoulder_low",
+          "head_tilted_right",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 35.10844278335571,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "right_shoulder_low",
+          "head_tilted_right",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 36.1124849319458,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "right_shoulder_low",
+          "head_tilted_right",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 37.176944971084595,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "right_shoulder_low",
+          "head_tilted_right",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 38.23297190666199,
+        "quality": "poor",
+        "score": 0.7699999999999999,
+        "issues": [
+          "right_shoulder_low",
+          "head_tilted_left"
+        ]
+      },
+      {
+        "time": 39.26805782318115,
+        "quality": "poor",
+        "score": 0.6900000000000001,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 40.28346276283264,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 41.29856491088867,
+        "quality": "poor",
+        "score": 0.6900000000000001,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 42.30067992210388,
+        "quality": "poor",
+        "score": 0.7699999999999999,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left"
+        ]
+      },
+      {
+        "time": 43.36155891418457,
+        "quality": "poor",
+        "score": 0.7699999999999999,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left"
+        ]
+      },
+      {
+        "time": 44.36771368980408,
+        "quality": "poor",
+        "score": 0.72,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 45.370728969573975,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 46.431005001068115,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 47.49611282348633,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 48.508386850357056,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 49.513956785202026,
+        "quality": "poor",
+        "score": 0.6620000000000001,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_forward"
+        ]
+      },
+      {
+        "time": 50.581377029418945,
+        "quality": "poor",
+        "score": 0.6500000000000001,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_forward"
+        ]
+      },
+      {
+        "time": 51.617522954940796,
+        "quality": "poor",
+        "score": 0.6500000000000001,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_forward"
+        ]
+      },
+      {
+        "time": 52.635663747787476,
+        "quality": "poor",
+        "score": 0.6500000000000001,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_forward"
+        ]
+      },
+      {
+        "time": 53.6496467590332,
+        "quality": "poor",
+        "score": 0.5349999999999999,
+        "issues": [
+          "left_shoulder_low",
+          "slouching",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 54.68264603614807,
+        "quality": "poor",
+        "score": 0.5199999999999999,
+        "issues": [
+          "left_shoulder_low",
+          "slouching",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 55.71874475479126,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_right",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 56.79139590263367,
+        "quality": "poor",
+        "score": 0.6200000000000001,
+        "issues": [
+          "left_shoulder_low",
+          "slouching",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 57.846253871917725,
+        "quality": "poor",
+        "score": 0.68,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 58.85280799865723,
+        "quality": "poor",
+        "score": 0.7,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 59.88674998283386,
+        "quality": "poor",
+        "score": 0.75,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 60.95433688163757,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 61.99403786659241,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 63.049728870391846,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 64.05294990539551,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 65.08835673332214,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 66.15766668319702,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 67.18394684791565,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "right_shoulder_low",
+          "head_tilted_right",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 68.2213487625122,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "right_shoulder_low",
+          "head_tilted_right",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 69.2857620716095,
+        "quality": "poor",
+        "score": 0.71,
+        "issues": [
+          "right_shoulder_low",
+          "head_tilted_right"
+        ]
+      },
+      {
+        "time": 70.28750586509705,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_right",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 71.32752585411072,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_right",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 72.38728189468384,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_right",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 73.45216107368469,
+        "quality": "poor",
+        "score": 0.7100000000000001,
+        "issues": [
+          "right_shoulder_low",
+          "head_tilted_right",
+          "leaning_forward"
+        ]
+      },
+      {
+        "time": 74.4600567817688,
+        "quality": "poor",
+        "score": 0.6500000000000001,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_right",
+          "leaning_forward"
+        ]
+      },
+      {
+        "time": 75.52550506591797,
+        "quality": "poor",
+        "score": 0.6500000000000001,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_right",
+          "leaning_forward"
+        ]
+      },
+      {
+        "time": 76.55565476417542,
+        "quality": "poor",
+        "score": 0.6500000000000001,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_right",
+          "leaning_forward"
+        ]
+      },
+      {
+        "time": 77.59121894836426,
+        "quality": "poor",
+        "score": 0.6500000000000001,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_right",
+          "leaning_forward"
+        ]
+      },
+      {
+        "time": 78.62808084487915,
+        "quality": "poor",
+        "score": 0.6500000000000001,
+        "issues": [
+          "right_shoulder_low",
+          "head_tilted_right",
+          "leaning_forward"
+        ]
+      },
+      {
+        "time": 79.66564774513245,
+        "quality": "poor",
+        "score": 0.5599999999999999,
+        "issues": [
+          "right_shoulder_low",
+          "slouching",
+          "head_tilted_right",
+          "leaning_forward"
+        ]
+      },
+      {
+        "time": 80.73255777359009,
+        "quality": "poor",
+        "score": 0.593,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_right"
+        ]
+      },
+      {
+        "time": 81.77527499198914,
+        "quality": "poor",
+        "score": 0.6050000000000001,
+        "issues": [
+          "right_shoulder_low",
+          "slouching",
+          "head_tilted_left",
+          "leaning_forward"
+        ]
+      },
+      {
+        "time": 82.83409881591797,
+        "quality": "poor",
+        "score": 0.694,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 83.87122797966003,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_right",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 84.89426589012146,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "right_shoulder_low",
+          "head_tilted_right",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 85.90137076377869,
+        "quality": "poor",
+        "score": 0.7699999999999999,
+        "issues": [
+          "right_shoulder_low",
+          "head_tilted_right"
+        ]
+      },
+      {
+        "time": 86.90416693687439,
+        "quality": "poor",
+        "score": 0.7299999999999999,
+        "issues": [
+          "right_shoulder_low",
+          "head_tilted_right"
+        ]
+      },
+      {
+        "time": 87.97157669067383,
+        "quality": "poor",
+        "score": 0.73,
+        "issues": [
+          "right_shoulder_low",
+          "head_tilted_right",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 88.99724698066711,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "right_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 90.00636982917786,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 91.06638884544373,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 92.12068200111389,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 93.17592787742615,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 94.23103475570679,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      },
+      {
+        "time": 95.23355388641357,
+        "quality": "poor",
+        "score": 0.67,
+        "issues": [
+          "left_shoulder_low",
+          "head_tilted_left",
+          "leaning_backward"
+        ]
+      }
+    ],
+    "gaze": [
+      {
+        "time": 1.0576508045196533,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 2.0654730796813965,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 3.0755038261413574,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 4.151896715164185,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 5.2219579219818115,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 6.245765924453735,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 7.310151815414429,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 8.312258005142212,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 9.385297775268555,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 10.419116020202637,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 11.42129898071289,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 12.447464942932129,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 13.481420755386353,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 14.548667907714844,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 15.610816955566406,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 16.644998788833618,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 17.712329864501953,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 18.713231801986694,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 19.713751077651978,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 20.71773386001587,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 21.71850872039795,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 22.720316886901855,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 23.72875189781189,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 24.78979992866516,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 25.82278299331665,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 26.839853763580322,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 27.8626708984375,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 28.92759609222412,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 29.9669246673584,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 30.992453813552856,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 31.998934030532837,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 33.002840757369995,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 34.06221079826355,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 35.10844278335571,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 36.1124849319458,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 37.176944971084595,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 38.23297190666199,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 39.26805782318115,
+        "direction": "up",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 40.28346276283264,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 41.29856491088867,
+        "direction": "up",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 42.30067992210388,
+        "direction": "down",
+        "score": 0.7295806121826173,
+        "looking_at_camera": false
+      },
+      {
+        "time": 43.36155891418457,
+        "direction": "down",
+        "score": 0.4749649047851563,
+        "looking_at_camera": false
+      },
+      {
+        "time": 44.36771368980408,
+        "direction": "up",
+        "score": 0.23349199295043954,
+        "looking_at_camera": false
+      },
+      {
+        "time": 45.370728969573975,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 46.431005001068115,
+        "direction": "down",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 47.49611282348633,
+        "direction": "unknown",
+        "score": 0.5,
+        "looking_at_camera": false
+      },
+      {
+        "time": 48.508386850357056,
+        "direction": "up",
+        "score": 0.5799528312683107,
+        "looking_at_camera": false
+      },
+      {
+        "time": 49.513956785202026,
+        "direction": "up",
+        "score": 0.8,
+        "looking_at_camera": false
+      },
+      {
+        "time": 50.581377029418945,
+        "direction": "up",
+        "score": 0.581547908782959,
+        "looking_at_camera": false
+      },
+      {
+        "time": 51.617522954940796,
+        "direction": "up",
+        "score": 0.3328673934936524,
+        "looking_at_camera": false
+      },
+      {
+        "time": 52.635663747787476,
+        "direction": "down",
+        "score": 0.2,
+        "looking_at_camera": false
+      },
+      {
+        "time": 53.6496467590332,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 54.68264603614807,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 55.71874475479126,
+        "direction": "right",
+        "score": 0.8,
+        "looking_at_camera": false
+      },
+      {
+        "time": 56.79139590263367,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 57.846253871917725,
+        "direction": "unknown",
+        "score": 0.5,
+        "looking_at_camera": false
+      },
+      {
+        "time": 58.85280799865723,
+        "direction": "unknown",
+        "score": 0.5,
+        "looking_at_camera": false
+      },
+      {
+        "time": 59.88674998283386,
+        "direction": "down",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 60.95433688163757,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 61.99403786659241,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 63.049728870391846,
+        "direction": "unknown",
+        "score": 0.5,
+        "looking_at_camera": false
+      },
+      {
+        "time": 64.05294990539551,
+        "direction": "unknown",
+        "score": 0.5,
+        "looking_at_camera": false
+      },
+      {
+        "time": 65.08835673332214,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 66.15766668319702,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 67.18394684791565,
+        "direction": "unknown",
+        "score": 0.5,
+        "looking_at_camera": false
+      },
+      {
+        "time": 68.2213487625122,
+        "direction": "unknown",
+        "score": 0.5,
+        "looking_at_camera": false
+      },
+      {
+        "time": 69.2857620716095,
+        "direction": "unknown",
+        "score": 0.5,
+        "looking_at_camera": false
+      },
+      {
+        "time": 70.28750586509705,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 71.32752585411072,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 72.38728189468384,
+        "direction": "center",
+        "score": 0.8,
+        "looking_at_camera": false
+      },
+      {
+        "time": 73.45216107368469,
+        "direction": "unknown",
+        "score": 0.5,
+        "looking_at_camera": false
+      },
+      {
+        "time": 74.4600567817688,
+        "direction": "up",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 75.52550506591797,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 76.55565476417542,
+        "direction": "center",
+        "score": 0.8,
+        "looking_at_camera": false
+      },
+      {
+        "time": 77.59121894836426,
+        "direction": "up",
+        "score": 0.8,
+        "looking_at_camera": false
+      },
+      {
+        "time": 78.62808084487915,
+        "direction": "up",
+        "score": 0.6390216255187989,
+        "looking_at_camera": false
+      },
+      {
+        "time": 79.66564774513245,
+        "direction": "up",
+        "score": 0.39000820159912114,
+        "looking_at_camera": false
+      },
+      {
+        "time": 80.73255777359009,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 81.77527499198914,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 82.83409881591797,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 83.87122797966003,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 84.89426589012146,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 85.90137076377869,
+        "direction": "up",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 86.90416693687439,
+        "direction": "center",
+        "score": 0.8,
+        "looking_at_camera": false
+      },
+      {
+        "time": 87.97157669067383,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 88.99724698066711,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 90.00636982917786,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 91.06638884544373,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 92.12068200111389,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 93.17592787742615,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 94.23103475570679,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      },
+      {
+        "time": 95.23355388641357,
+        "direction": "center",
+        "score": 1.0,
+        "looking_at_camera": true
+      }
+    ],
+    "movement": [
+      {
+        "time": 1.0576508045196533,
+        "nervousness": "highly_nervous",
+        "score": 0.14285714285714285,
+        "displacement": 9.628006018808431
+      },
+      {
+        "time": 2.0654730796813965,
+        "nervousness": "slightly_nervous",
+        "score": 0.08881995037704606,
+        "displacement": 7.207289621082718
+      },
+      {
+        "time": 3.0755038261413574,
+        "nervousness": "slightly_nervous",
+        "score": 0.33997265768680746,
+        "displacement": 4.984424570990409
+      },
+      {
+        "time": 4.151896715164185,
+        "nervousness": "calm",
+        "score": 0.8609254137149058,
+        "displacement": 1.9949420111643545
+      },
+      {
+        "time": 5.2219579219818115,
+        "nervousness": "calm",
+        "score": 1.0,
+        "displacement": 0.8963741064535099
+      },
+      {
+        "time": 6.245765924453735,
+        "nervousness": "calm",
+        "score": 1.0,
+        "displacement": 0.9617590230746756
+      },
+      {
+        "time": 7.310151815414429,
+        "nervousness": "highly_nervous",
+        "score": 0.2538985522255901,
+        "displacement": 14.591783955633813
+      },
+      {
+        "time": 8.312258005142212,
+        "nervousness": "highly_nervous",
+        "score": 0.0,
+        "displacement": 15.038061508840123
+      },
+      {
+        "time": 9.385297775268555,
+        "nervousness": "slightly_nervous",
+        "score": 0.3050307239115418,
+        "displacement": 3.429120419409515
+      },
+      {
+        "time": 10.419116020202637,
+        "nervousness": "calm",
+        "score": 0.9973654237107222,
+        "displacement": 0.5644078961745393
+      },
+      {
+        "time": 11.42129898071289,
+        "nervousness": "calm",
+        "score": 1.0,
+        "displacement": 0.39544477387700877
+      },
+      {
+        "time": 12.447464942932129,
+        "nervousness": "calm",
+        "score": 1.0,
+        "displacement": 1.2156316050697027
+      },
+      {
+        "time": 13.481420755386353,
+        "nervousness": "slightly_nervous",
+        "score": 0.7791180861800889,
+        "displacement": 3.8727980479876427
+      },
+      {
+        "time": 14.548667907714844,
+        "nervousness": "slightly_nervous",
+        "score": 0.8288459659699505,
+        "displacement": 2.6612313395988623
+      },
+      {
+        "time": 15.610816955566406,
+        "nervousness": "slightly_nervous",
+        "score": 0.51023733063659,
+        "displacement": 4.805169089253356
+      },
+      {
+        "time": 16.644998788833618,
+        "nervousness": "slightly_nervous",
+        "score": 0.18482896368696028,
+        "displacement": 7.569244037175461
+      },
+      {
+        "time": 17.712329864501953,
+        "nervousness": "slightly_nervous",
+        "score": 0.21299805722257922,
+        "displacement": 6.247638919025898
+      },
+      {
+        "time": 18.713231801986694,
+        "nervousness": "slightly_nervous",
+        "score": 0.11553630309920168,
+        "displacement": 6.475111594917767
+      },
+      {
+        "time": 19.713751077651978,
+        "nervousness": "slightly_nervous",
+        "score": 0.6219840787779757,
+        "displacement": 3.7962807091904662
+      },
+      {
+        "time": 20.71773386001587,
+        "nervousness": "calm",
+        "score": 0.9748466230609217,
+        "displacement": 1.7810251009054399
+      },
+      {
+        "time": 21.71850872039795,
+        "nervousness": "slightly_nervous",
+        "score": 0.9428032251715296,
+        "displacement": 2.4999175453608466
+      },
+      {
+        "time": 22.720316886901855,
+        "nervousness": "calm",
+        "score": 1.0,
+        "displacement": 1.2763254933649386
+      },
+      {
+        "time": 23.72875189781189,
+        "nervousness": "slightly_nervous",
+        "score": 0.999012677039439,
+        "displacement": 2.05923937763366
+      },
+      {
+        "time": 24.78979992866516,
+        "nervousness": "slightly_nervous",
+        "score": 0.9119102563886322,
+        "displacement": 2.4339495159990943
+      },
+      {
+        "time": 25.82278299331665,
+        "nervousness": "calm",
+        "score": 0.9932929288499069,
+        "displacement": 0.9872796413183178
+      },
+      {
+        "time": 26.839853763580322,
+        "nervousness": "calm",
+        "score": 1.0,
+        "displacement": 0.424713728354195
+      },
+      {
+        "time": 27.8626708984375,
+        "nervousness": "calm",
+        "score": 1.0,
+        "displacement": 0.6804921865350821
+      },
+      {
+        "time": 28.92759609222412,
+        "nervousness": "calm",
+        "score": 1.0,
+        "displacement": 1.629957368976369
+      },
+      {
+        "time": 29.9669246673584,
+        "nervousness": "calm",
+        "score": 1.0,
+        "displacement": 1.5981467648253924
+      },
+      {
+        "time": 30.992453813552856,
+        "nervousness": "calm",
+        "score": 1.0,
+        "displacement": 0.8923000412478785
+      },
+      {
+        "time": 31.998934030532837,
+        "nervousness": "calm",
+        "score": 1.0,
+        "displacement": 1.934819246610834
+      },
+      {
+        "time": 33.002840757369995,
+        "nervousness": "slightly_nervous",
+        "score": 0.9711447166797477,
+        "displacement": 2.2193443873833516
+      },
+      {
+        "time": 34.06221079826355,
+        "nervousness": "calm",
+        "score": 0.9910507282391929,
+        "displacement": 1.3113361084591393
+      },
+      {
+        "time": 35.10844278335571,
+        "nervousness": "calm",
+        "score": 1.0,
+        "displacement": 0.8286567321915943
+      },
+      {
+        "time": 36.1124849319458,
+        "nervousness": "calm",
+        "score": 1.0,
+        "displacement": 1.189681831971439
+      },
+      {
+        "time": 37.176944971084595,
+        "nervousness": "calm",
+        "score": 1.0,
+        "displacement": 1.0280883266617766
+      },
+      {
+        "time": 38.23297190666199,
+        "nervousness": "slightly_nervous",
+        "score": 0.9632555240851073,
+        "displacement": 2.4435081077629346
+      },
+      {
+        "time": 39.26805782318115,
+        "nervousness": "slightly_nervous",
+        "score": 0.615133196339046,
+        "displacement": 6.541076000087449
+      },
+      {
+        "time": 40.28346276283264,
+        "nervousness": "highly_nervous",
+        "score": 0.0,
+        "displacement": 18.20305477953303
+      },
+      {
+        "time": 41.29856491088867,
+        "nervousness": "highly_nervous",
+        "score": 0.0,
+        "displacement": 18.515082866218446
+      },
+      {
+        "time": 42.30067992210388,
+        "nervousness": "highly_nervous",
+        "score": 0.0,
+        "displacement": 10.782179913458151
+      },
+      {
+        "time": 43.36155891418457,
+        "nervousness": "slightly_nervous",
+        "score": 0.1898434570477984,
+        "displacement": 4.595939268108163
+      },
+      {
+        "time": 44.36771368980408,
+        "nervousness": "slightly_nervous",
+        "score": 0.740550516502965,
+        "displacement": 3.0117138817021076
+      },
+      {
+        "time": 45.370728969573975,
+        "nervousness": "slightly_nervous",
+        "score": 0.44083701921271806,
+        "displacement": 6.400132002387066
+      },
+      {
+        "time": 46.431005001068115,
+        "nervousness": "slightly_nervous",
+        "score": 0.4809907942320776,
+        "displacement": 5.186279554393663
+      },
+      {
+        "time": 47.49611282348633,
+        "nervousness": "highly_nervous",
+        "score": 0.0007028628792636216,
+        "displacement": 8.41387771914496
+      },
+      {
+        "time": 48.508386850357056,
+        "nervousness": "highly_nervous",
+        "score": 0.0,
+        "displacement": 10.18769254539254
+      },
+      {
+        "time": 49.513956785202026,
+        "nervousness": "highly_nervous",
+        "score": 0.0,
+        "displacement": 17.494718430024893
+      },
+      {
+        "time": 50.581377029418945,
+        "nervousness": "highly_nervous",
+        "score": 0.0,
+        "displacement": 11.607925665541199
+      },
+      {
+        "time": 51.617522954940796,
+        "nervousness": "calm",
+        "score": 0.6935723831293171,
+        "displacement": 1.918913505311067
+      },
+      {
+        "time": 52.635663747787476,
+        "nervousness": "slightly_nervous",
+        "score": 0.9425025500252453,
+        "displacement": 4.8101051619474156
+      },
+      {
+        "time": 53.6496467590332,
+        "nervousness": "highly_nervous",
+        "score": 0.0,
+        "displacement": 9.363743923698538
+      },
+      {
+        "time": 54.68264603614807,
+        "nervousness": "slightly_nervous",
+        "score": 0.06414377929117966,
+        "displacement": 6.903301335192931
+      },
+      {
+        "time": 55.71874475479126,
+        "nervousness": "slightly_nervous",
+        "score": 0.305195733560911,
+        "displacement": 5.562147409157871
+      },
+      {
+        "time": 56.79139590263367,
+        "nervousness": "slightly_nervous",
+        "score": 0.04234530616230038,
+        "displacement": 7.58649595302198
+      },
+      {
+        "time": 57.846253871917725,
+        "nervousness": "highly_nervous",
+        "score": 0.07750499762267446,
+        "displacement": 11.636730789427437
+      },
+      {
+        "time": 58.85280799865723,
+        "nervousness": "slightly_nervous",
+        "score": 0.0004133981060461256,
+        "displacement": 7.9751961136372325
+      },
+      {
+        "time": 59.88674998283386,
+        "nervousness": "slightly_nervous",
+        "score": 0.3860211302728846,
+        "displacement": 3.0761329311853163
+      },
+      {
+        "time": 60.95433688163757,
+        "nervousness": "slightly_nervous",
+        "score": 0.8714109564989425,
+        "displacement": 2.523139458006298
+      },
+      {
+        "time": 61.99403786659241,
+        "nervousness": "slightly_nervous",
+        "score": 0.5422927821597465,
+        "displacement": 6.053204787366554
+      },
+      {
+        "time": 63.049728870391846,
+        "nervousness": "highly_nervous",
+        "score": 0.043084601574622586,
+        "displacement": 11.08385180573904
+      },
+      {
+        "time": 64.05294990539551,
+        "nervousness": "highly_nervous",
+        "score": 0.0,
+        "displacement": 8.041661673640453
+      },
+      {
+        "time": 65.08835673332214,
+        "nervousness": "slightly_nervous",
+        "score": 0.36367635710712065,
+        "displacement": 7.461269679578092
+      },
+      {
+        "time": 66.15766668319702,
+        "nervousness": "highly_nervous",
+        "score": 0.16571123315749775,
+        "displacement": 8.55935064423259
+      },
+      {
+        "time": 67.18394684791565,
+        "nervousness": "highly_nervous",
+        "score": 0.0,
+        "displacement": 10.396423846102257
+      },
+      {
+        "time": 68.2213487625122,
+        "nervousness": "slightly_nervous",
+        "score": 0.01274554317061517,
+        "displacement": 7.475075519364067
+      },
+      {
+        "time": 69.2857620716095,
+        "nervousness": "slightly_nervous",
+        "score": 0.6578500607023074,
+        "displacement": 2.9801017737805386
+      },
+      {
+        "time": 70.28750586509705,
+        "nervousness": "slightly_nervous",
+        "score": 0.549055925524388,
+        "displacement": 6.47275239751739
+      },
+      {
+        "time": 71.32752585411072,
+        "nervousness": "slightly_nervous",
+        "score": 0.3913280049545363,
+        "displacement": 5.234103423716748
+      },
+      {
+        "time": 72.38728189468384,
+        "nervousness": "highly_nervous",
+        "score": 0.24947034967444517,
+        "displacement": 8.777671224042503
+      },
+      {
+        "time": 73.45216107368469,
+        "nervousness": "highly_nervous",
+        "score": 0.0,
+        "displacement": 14.095079279735748
+      },
+      {
+        "time": 74.4600567817688,
+        "nervousness": "highly_nervous",
+        "score": 0.0,
+        "displacement": 15.651589415880476
+      },
+      {
+        "time": 75.52550506591797,
+        "nervousness": "highly_nervous",
+        "score": 0.0,
+        "displacement": 10.22367406013352
+      },
+      {
+        "time": 76.55565476417542,
+        "nervousness": "highly_nervous",
+        "score": 0.0,
+        "displacement": 9.343439509068295
+      },
+      {
+        "time": 77.59121894836426,
+        "nervousness": "highly_nervous",
+        "score": 0.0,
+        "displacement": 8.52486963958911
+      },
+      {
+        "time": 78.62808084487915,
+        "nervousness": "slightly_nervous",
+        "score": 0.18157499784678804,
+        "displacement": 6.550061007375289
+      },
+      {
+        "time": 79.66564774513245,
+        "nervousness": "slightly_nervous",
+        "score": 0.2134118364545909,
+        "displacement": 5.779481091662186
+      },
+      {
+        "time": 80.73255777359009,
+        "nervousness": "highly_nervous",
+        "score": 0.017412428229422218,
+        "displacement": 11.253052111705644
+      },
+      {
+        "time": 81.77527499198914,
+        "nervousness": "highly_nervous",
+        "score": 0.0,
+        "displacement": 8.496315434847695
+      },
+      {
+        "time": 82.83409881591797,
+        "nervousness": "slightly_nervous",
+        "score": 0.3639235878155812,
+        "displacement": 5.605985006006125
+      },
+      {
+        "time": 83.87122797966003,
+        "nervousness": "slightly_nervous",
+        "score": 0.39175084999549414,
+        "displacement": 5.565899227933768
+      },
+      {
+        "time": 84.89426589012146,
+        "nervousness": "highly_nervous",
+        "score": 0.13201117673852675,
+        "displacement": 10.860475299142099
+      },
+      {
+        "time": 85.90137076377869,
+        "nervousness": "highly_nervous",
+        "score": 0.0,
+        "displacement": 9.435567374357468
+      },
+      {
+        "time": 86.90416693687439,
+        "nervousness": "slightly_nervous",
+        "score": 0.29375405030334556,
+        "displacement": 3.6773901739278103
+      },
+      {
+        "time": 87.97157669067383,
+        "nervousness": "slightly_nervous",
+        "score": 0.7930629795126509,
+        "displacement": 4.036257041502477
+      },
+      {
+        "time": 88.99724698066711,
+        "nervousness": "slightly_nervous",
+        "score": 0.4924408921408922,
+        "displacement": 5.180521599429817
+      },
+      {
+        "time": 90.00636982917786,
+        "nervousness": "slightly_nervous",
+        "score": 0.3602721235593789,
+        "displacement": 5.658695509792277
+      },
+      {
+        "time": 91.06638884544373,
+        "nervousness": "slightly_nervous",
+        "score": 0.721096224821978,
+        "displacement": 3.2584877334099653
+      },
+      {
+        "time": 92.12068200111389,
+        "nervousness": "calm",
+        "score": 0.9489559380198429,
+        "displacement": 1.779435600868852
+      },
+      {
+        "time": 93.17592787742615,
+        "nervousness": "calm",
+        "score": 1.0,
+        "displacement": 1.865031002607121
+      },
+      {
+        "time": 94.23103475570679,
+        "nervousness": "calm",
+        "score": 1.0,
+        "displacement": 1.2265372045710836
+      },
+      {
+        "time": 95.23355388641357,
+        "nervousness": "calm",
+        "score": 1.0,
+        "displacement": 0.5961742365555598
+      }
+    ]
+  }
+}

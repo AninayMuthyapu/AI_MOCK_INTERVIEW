@@ -175,7 +175,7 @@ export function useSTT(): UseSTTReturn {
                       console.error("Restart after no-speech failed:", e);
                     }
                   }
-                }, 100);
+                }, 50);
                 return;
               }
               break;
@@ -215,7 +215,7 @@ export function useSTT(): UseSTTReturn {
                   }
                 }
               }
-            }, 100);
+            }, 50);
           } else {
             setIsListening(false);
           }
@@ -243,8 +243,8 @@ export function useSTT(): UseSTTReturn {
       return;
     }
 
-    // First, ensure we have microphone permission
-    if (hasPermission === null || hasPermission === false) {
+    // Only request permission if we haven't been granted it yet
+    if (hasPermission !== true) {
       const granted = await requestMicrophonePermission();
       if (!granted) {
         return;
