@@ -67,6 +67,13 @@ async def start_interview(
         "session_id": session_id
     }
 
+    # Start background posture analysis
+    try:
+        from services.posture_service import posture_service
+        posture_service.start_background(session_id)
+    except Exception as e:
+        print(f"Posture analysis could not start: {e}")
+
     return InterviewStartResponse(
         message="Interview session started successfully.",
         sessionId=session_id,
@@ -277,5 +284,15 @@ async def get_interview_summary(session_id: str):
     company_name = sess.get("company_name", "Unknown Company")
     job_role = sess.get("job_role", "Unknown Role")
 
-    summary = await GeminiService.generate_interview_summary(sess, company_name, job_role)
+    # Stop background posture analysis and collect report
+    posture_report = None
+    try:
+        from services.posture_service import posture_service
+        posture_report = posture_service.stop_background(session_id)
+    except Exception as e:
+        print(f"Could not get posture report: {e}")
+
+    summary = await GeminiService.generate_interview_summary(
+        sess, company_name, job_role, posture_report=posture_report
+    )
     return summary

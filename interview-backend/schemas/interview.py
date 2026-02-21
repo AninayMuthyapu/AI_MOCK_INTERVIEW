@@ -77,3 +77,5 @@ class InterviewSummaryResponse(BaseModel):
     areas_for_improvement: List[str]
     recommendations: List[str]
     overall_feedback: str
+    posture_report: Optional[dict] = Field(default=None, description="Behavioral analysis report from background posture engine")
+

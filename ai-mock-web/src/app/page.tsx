@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Moon, Sun, Zap, Award, Shield } from "lucide-react"
+import { Moon, Sun, Zap, Award, Shield, FileText, Sparkles, Mic, Layers } from "lucide-react"
 import { useTheme } from "next-themes"
 
 export default function Home() {
@@ -168,6 +168,160 @@ export default function Home() {
             <p className="text-muted-foreground">
               Your data is encrypted and never shared. Practice with confidence knowing your information is secure.
             </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Practice Mode Section */}
+      <section id="practice-modes" className="py-24 px-6 relative z-10">
+        {/* Warm neutral background blob */}
+        <div className="absolute inset-0 -z-10 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent" />
+        </div>
+
+        <div className="max-w-7xl mx-auto">
+          {/* Section Header */}
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent mb-4">
+              Choose Your Practice Mode
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+              Practice interviews your way — full simulations, specific interview rounds, or resume feedback.
+            </p>
+          </div>
+
+          {/* Cards Row */}
+          <div className="flex flex-col lg:flex-row items-stretch justify-center gap-6">
+
+            {/* Card 1: Resume Analyzer */}
+            <Link
+              href="/resume-analyzer"
+              className="group flex-1 max-w-sm lg:max-w-none lg:flex-[0_0_28%] bg-card border border-border rounded-[20px] p-8 shadow-md hover:shadow-xl hover:-translate-y-2 transition-all duration-300 flex flex-col"
+            >
+              {/* Icon */}
+              <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mb-5 group-hover:bg-primary/20 transition-colors">
+                <div className="relative">
+                  <FileText className="w-7 h-7 text-primary" />
+                  <Sparkles className="w-3.5 h-3.5 text-accent absolute -top-1 -right-1" />
+                </div>
+              </div>
+
+              {/* Tag */}
+              <span className="inline-block text-xs font-semibold tracking-widest uppercase text-primary bg-primary/10 rounded-full px-3 py-1 mb-4 w-fit">
+                Resume
+              </span>
+
+              {/* Title */}
+              <h3 className="text-xl font-bold text-foreground mb-3">
+                Resume Analyzer
+              </h3>
+
+              {/* Description */}
+              <p className="text-muted-foreground text-sm leading-relaxed flex-1 mb-6">
+                Upload your resume and get ATS score, strengths, and role-specific improvement suggestions.
+              </p>
+
+              {/* CTA */}
+              <div className="mt-auto">
+                <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary/10 text-primary font-semibold rounded-xl text-sm group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
+                  Analyze Resume
+                  <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </span>
+              </div>
+            </Link>
+
+            {/* Card 2: Full Mock Interview (Highlighted / Center) */}
+            <Link
+              href="/login?callbackUrl=%2FInterviewSelectionPage"
+              className="group flex-1 max-w-sm lg:max-w-none lg:flex-[0_0_36%] bg-card border-2 border-primary/40 rounded-[20px] p-10 shadow-lg hover:shadow-2xl hover:-translate-y-3 transition-all duration-300 flex flex-col relative overflow-hidden"
+              style={{
+                boxShadow: '0 0 0 1px oklch(0.6 0.18 45 / 0.2), 0 8px 32px oklch(0.6 0.18 45 / 0.15)',
+              }}
+            >
+              {/* Orange glow border pulse */}
+              <div
+                className="absolute inset-0 rounded-[20px] pointer-events-none"
+                style={{
+                  boxShadow: 'inset 0 0 40px oklch(0.6 0.18 45 / 0.06)',
+                }}
+              />
+
+              {/* Popular badge */}
+              <div className="absolute top-5 right-5">
+                <span className="text-xs font-bold tracking-widest uppercase bg-gradient-to-r from-primary to-accent text-primary-foreground rounded-full px-3 py-1">
+                  Popular
+                </span>
+              </div>
+
+              {/* Icon */}
+              <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl flex items-center justify-center mb-5 group-hover:from-primary/30 group-hover:to-accent/30 transition-all">
+                <Mic className="w-8 h-8 text-primary" />
+              </div>
+
+              {/* Tag */}
+              <span className="inline-block text-xs font-semibold tracking-widest uppercase text-primary bg-primary/10 rounded-full px-3 py-1 mb-4 w-fit">
+                Simulation
+              </span>
+
+              {/* Title */}
+              <h3 className="text-2xl font-bold text-foreground mb-3">
+                Full Mock Interview
+              </h3>
+
+              {/* Description */}
+              <p className="text-muted-foreground text-sm leading-relaxed flex-1 mb-8">
+                Experience realistic multi-round interviews with dynamic AI questions, voice interaction, and detailed feedback.
+              </p>
+
+              {/* CTA */}
+              <div className="mt-auto">
+                <span className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold rounded-xl text-sm shadow-lg shadow-primary/25 group-hover:shadow-primary/40 group-hover:scale-105 transition-all duration-300">
+                  Start Interview
+                  <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </span>
+              </div>
+            </Link>
+
+            {/* Card 3: Interview Types */}
+            <Link
+              href="/login?callbackUrl=%2FInterviewSelectionPage"
+              className="group flex-1 max-w-sm lg:max-w-none lg:flex-[0_0_28%] bg-card border border-border rounded-[20px] p-8 shadow-md hover:shadow-xl hover:-translate-y-2 transition-all duration-300 flex flex-col"
+            >
+              {/* Icon */}
+              <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mb-5 group-hover:bg-primary/20 transition-colors">
+                <Layers className="w-7 h-7 text-primary" />
+              </div>
+
+              {/* Tag */}
+              <span className="inline-block text-xs font-semibold tracking-widest uppercase text-primary bg-primary/10 rounded-full px-3 py-1 mb-4 w-fit">
+                Rounds
+              </span>
+
+              {/* Title */}
+              <h3 className="text-xl font-bold text-foreground mb-3">
+                Interview Types
+              </h3>
+
+              {/* Description */}
+              <p className="text-muted-foreground text-sm leading-relaxed flex-1 mb-6">
+                Practice specific interview rounds like HR, coding, technical, aptitude, or system design.
+              </p>
+
+              {/* CTA */}
+              <div className="mt-auto">
+                <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary/10 text-primary font-semibold rounded-xl text-sm group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
+                  Choose Round
+                  <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </span>
+              </div>
+            </Link>
+
           </div>
         </div>
       </section>

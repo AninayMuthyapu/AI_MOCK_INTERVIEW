@@ -406,14 +406,23 @@ Focus on:
     # Interview summary
     # ------------------------------------------------------------------
     @staticmethod
-    async def generate_interview_summary(session_data: dict, company_name: str, job_role: str) -> InterviewSummaryResponse:
+    async def generate_interview_summary(session_data: dict, company_name: str, job_role: str, *, posture_report: Optional[Dict[str, Any]] = None) -> InterviewSummaryResponse:
         """Generates a comprehensive interview summary with overall feedback and recommendations."""
         try:
             questions_and_answers = session_data.get("questions_and_answers", [])
             total_questions = len(questions_and_answers)
 
             scores = [qa.get("score", 0) for qa in questions_and_answers if qa.get("score")]
-            overall_score = sum(scores) / len(scores) if scores else 0
+            qa_score = sum(scores) / len(scores) if scores else 0
+
+            # Blend Q&A score with posture readiness score (70% Q&A, 30% posture)
+            if posture_report:
+                posture_readiness = posture_report.get("overall_assessment", {}).get("readiness_score", 0)
+                # Posture readiness is 0-100, Q&A score is 0-10 → normalise
+                posture_normalised = posture_readiness / 10  # → 0-10 scale
+                overall_score = round(qa_score * 0.7 + posture_normalised * 0.3, 1)
+            else:
+                overall_score = qa_score
 
             rounds = {}
             for qa in questions_and_answers:
@@ -433,10 +442,27 @@ Focus on:
                     "question_types": list(set(qa.get("type", "unknown") for qa in round_qas))
                 })
 
+            # Build posture context for the AI prompt
+            posture_context = ""
+            if posture_report:
+                bm = posture_report.get("behavioral_metrics", {})
+                oa = posture_report.get("overall_assessment", {})
+                posture_context = f"""
+            
+            Posture & Behavioral Analysis (from webcam during interview):
+            - Confidence Score: {bm.get('confidence', {}).get('average_score', 'N/A')}/100 ({bm.get('confidence', {}).get('label', '')})
+            - Eye Contact: {bm.get('eye_contact', {}).get('percentage', 'N/A')}% ({bm.get('eye_contact', {}).get('rating', '')})
+            - Posture Quality: {bm.get('posture', {}).get('quality_score', 'N/A')}/100 ({bm.get('posture', {}).get('rating', '')})
+            - Movement Stability: {bm.get('stability', {}).get('movement_score', 'N/A')}/100 ({bm.get('stability', {}).get('rating', '')})
+            - Overall Readiness: {oa.get('readiness_score', 'N/A')}/100 ({oa.get('readiness_label', '')})
+            - Posture Recommendations: {', '.join(oa.get('recommendations', []))}
+            """
+
             context = f"""
             Interview Summary for {job_role} at {company_name}:
             - Total Questions: {total_questions}
-            - Overall Score: {overall_score:.1f}/10
+            - Q&A Score: {qa_score:.1f}/10
+            - Overall Score (with posture): {overall_score:.1f}/10
             - Rounds: {len(rounds)}
             
             Round Performance:
@@ -444,6 +470,7 @@ Focus on:
             
             Sample Q&As:
             {chr(10).join([f"Q: {qa.get('question', '')[:100]}... A: {qa.get('answer', '')[:100]}... Score: {qa.get('score', 0)}/10" for qa in questions_and_answers[:3]])}
+            {posture_context}
             """
 
             prompt = f"""
@@ -465,6 +492,7 @@ Focus on:
             - Problem-solving approach
             - Areas that need development
             - Specific actionable recommendations
+            {"- Body language, posture, and eye contact based on posture analysis" if posture_report else ""}
             """
 
             response = model.generate_content(
@@ -479,6 +507,14 @@ Focus on:
             else:
                 raise ValueError("No JSON found in response")
 
+            # Append posture-specific recommendations if available
+            recommendations = result.get("recommendations", ["Continue practicing", "Review fundamentals"])
+            if posture_report:
+                posture_recs = posture_report.get("overall_assessment", {}).get("recommendations", [])
+                for rec in posture_recs:
+                    if rec not in recommendations:
+                        recommendations.append(rec)
+
             return InterviewSummaryResponse(
                 session_id=session_data.get("session_id", ""),
                 total_questions=total_questions,
@@ -488,8 +524,9 @@ Focus on:
                 round_summaries=round_summaries,
                 strengths=result.get("strengths", ["Completed the interview", "Showed engagement"]),
                 areas_for_improvement=result.get("areas_for_improvement", ["Practice more technical questions"]),
-                recommendations=result.get("recommendations", ["Continue practicing", "Review fundamentals"]),
-                overall_feedback=result.get("overall_feedback", "Good effort in completing the interview. Keep practicing to improve your skills.")
+                recommendations=recommendations,
+                overall_feedback=result.get("overall_feedback", "Good effort in completing the interview. Keep practicing to improve your skills."),
+                posture_report=posture_report
             )
         except Exception as e:
             print(f"Error generating interview summary: {e}")
@@ -503,7 +540,8 @@ Focus on:
                 strengths=["Completed the interview", "Showed engagement"],
                 areas_for_improvement=["Practice more questions", "Improve technical skills"],
                 recommendations=["Continue practicing", "Review core concepts", "Work on communication"],
-                overall_feedback="Thank you for completing the interview. Keep practicing to improve your skills and confidence."
+                overall_feedback="Thank you for completing the interview. Keep practicing to improve your skills and confidence.",
+                posture_report=posture_report
             )
 
     # ------------------------------------------------------------------

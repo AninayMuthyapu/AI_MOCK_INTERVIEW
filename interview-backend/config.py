@@ -43,3 +43,11 @@ os.makedirs(STATIC_OUTPUT_DIR, exist_ok=True)
 
 # Trial period
 TRIAL_DAYS = 20
+
+# Posture analysis engine path
+import sys
+POSTURE_ENGINE_PATH = os.path.join(os.path.dirname(BASE_DIR), "Postureanalysis-main")
+if os.path.isdir(POSTURE_ENGINE_PATH) and POSTURE_ENGINE_PATH not in sys.path:
+    sys.path.insert(0, POSTURE_ENGINE_PATH)
+    logger.info(f"Added Postureanalysis-main to sys.path: {POSTURE_ENGINE_PATH}")
+

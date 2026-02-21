@@ -147,7 +147,7 @@ export default function BehaviorMonitor({
         const imageData = canvas.toDataURL("image/jpeg", 0.7);
 
         const controller = new AbortController();
-        const fetchTimeout = setTimeout(() => controller.abort(), 8000);
+        const fetchTimeout = setTimeout(() => controller.abort(), 15000);
 
         const response = await fetch(`${API_BASE}/api/analyze-behavior`, {
           method: "POST",
@@ -175,6 +175,8 @@ export default function BehaviorMonitor({
         }
       } catch (err) {
         if (cancelled) return;
+        // Suppress AbortError — it's an expected timeout, not a real error
+        if (err instanceof Error && err.name === 'AbortError') return;
         errorCountRef.current += 1;
         console.error(`[BehaviorMonitor] Error #${errorCountRef.current}:`, err);
         if (errorCountRef.current >= maxConsecutiveErrors) {
