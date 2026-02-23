@@ -234,7 +234,7 @@ export default function Home() {
 
             {/* Card 2: Full Mock Interview (Highlighted / Center) */}
             <Link
-              href="/login?callbackUrl=%2FInterviewSelectionPage"
+              href="/login?callbackUrl=%2Fresume"
               className="group flex-1 max-w-sm lg:max-w-none lg:flex-[0_0_36%] bg-card border-2 border-primary/40 rounded-[20px] p-10 shadow-lg hover:shadow-2xl hover:-translate-y-3 transition-all duration-300 flex flex-col relative overflow-hidden"
               style={{
                 boxShadow: '0 0 0 1px oklch(0.6 0.18 45 / 0.2), 0 8px 32px oklch(0.6 0.18 45 / 0.15)',
@@ -288,7 +288,7 @@ export default function Home() {
 
             {/* Card 3: Interview Types */}
             <Link
-              href="/login?callbackUrl=%2FInterviewSelectionPage"
+              href="/InterviewSelectionPage"
               className="group flex-1 max-w-sm lg:max-w-none lg:flex-[0_0_28%] bg-card border border-border rounded-[20px] p-8 shadow-md hover:shadow-xl hover:-translate-y-2 transition-all duration-300 flex flex-col"
             >
               {/* Icon */}
