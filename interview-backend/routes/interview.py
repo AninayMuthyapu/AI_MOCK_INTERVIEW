@@ -17,6 +17,14 @@ from services.session_manager import session_data, sessions
 
 router = APIRouter(prefix="/api", tags=["interview"])
 
+HR_QUESTIONS = [
+    "Tell me about yourself.",
+    "Why do you want to work here?",
+    "What are your strengths and weaknesses?",
+    "Tell me about a challenge you faced and how you handled it.",
+    "Where do you see yourself in 5 years?"
+]
+
 
 @router.get("/current-session")
 async def get_current_session():
@@ -84,6 +92,49 @@ async def start_interview(
     )
 
 
+@router.post("/start-hr-interview", response_model=InterviewStartResponse)
+async def start_hr_interview():
+    """Starts a specialized HR mock interview sequence."""
+    
+    # Generate unique session ID
+    session_id = "hr_" + str(hash(datetime.now().isoformat()))[2:10]
+    
+    sessions[session_id] = {
+        "company_name": "General",
+        "job_role": "HR Interview",
+        "years_of_experience": 0,
+        "extracted_resume_text": "",
+        "current_round": 0,
+        "current_question": HR_QUESTIONS[0],
+        "current_question_type": "behavioral",
+        "interview_plan": [{"title": "HR Interview", "type": "behavioral", "question_count": 5}],
+        "current_round_index": 0,
+        "current_question_index": 0,
+        "interview_history": [],
+        "questions_and_answers": [],
+        "is_complete": False,
+        "start_time": datetime.now(),
+        "session_id": session_id,
+        "is_hr_interview": True
+    }
+
+    # Start background posture analysis
+    try:
+        from services.posture_service import posture_service
+        posture_service.start_background(session_id)
+    except Exception as e:
+        print(f"Posture analysis could not start: {e}")
+
+    return InterviewStartResponse(
+        message="HR Interview session started successfully.",
+        sessionId=session_id,
+        questionData=QuestionResponse(question=HR_QUESTIONS[0], type="behavioral"),
+        roundTitle="HR Round",
+        isComplete=False,
+        feedback=None
+    )
+
+
 @router.post("/submit-answer", response_model=InterviewSubmitResponse)
 async def submit_answer(answer_data: InterviewAnswer):
     session = session_data.get(answer_data.sessionId)
@@ -130,7 +181,7 @@ async def submit_answer(answer_data: InterviewAnswer):
         extracted_resume_text=None
     )
 
-    behavior_data = session.get("latest_behavior_data", None)
+    behavior_data = answer_data.behaviorData or session.get("latest_behavior_data", None)
     opensmile_features = session.get("latest_opensmile_features", None)
 
     soft_skills = await GeminiService.generate_soft_skills_feedback(
@@ -171,7 +222,14 @@ async def submit_answer(answer_data: InterviewAnswer):
 
     if current_question_index + 1 < current_round["question_count"]:
         session["current_question_index"] += 1
-        next_question_data = await get_next_question_data(session, current_round)
+        
+        # If HR interview, pick next static question
+        if session.get("is_hr_interview"):
+            next_question = HR_QUESTIONS[session["current_question_index"]]
+            next_question_data = QuestionResponse(question=next_question, type="behavioral")
+        else:
+            next_question_data = await get_next_question_data(session, current_round)
+            
         session["current_question"] = next_question_data.question
         session["current_question_type"] = current_round["type"]
 

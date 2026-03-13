@@ -232,9 +232,9 @@ export default function Home() {
               </div>
             </Link>
 
-            {/* Card 2: Full Mock Interview (Highlighted / Center) */}
+            {/* Card 2: HR Interview (Highlighted / Center) */}
             <Link
-              href="/login?callbackUrl=%2Fresume"
+              href="/hr-interview"
               className="group flex-1 max-w-sm lg:max-w-none lg:flex-[0_0_36%] bg-card border-2 border-primary/40 rounded-[20px] p-10 shadow-lg hover:shadow-2xl hover:-translate-y-3 transition-all duration-300 flex flex-col relative overflow-hidden"
               style={{
                 boxShadow: '0 0 0 1px oklch(0.6 0.18 45 / 0.2), 0 8px 32px oklch(0.6 0.18 45 / 0.15)',
@@ -262,17 +262,17 @@ export default function Home() {
 
               {/* Tag */}
               <span className="inline-block text-xs font-semibold tracking-widest uppercase text-primary bg-primary/10 rounded-full px-3 py-1 mb-4 w-fit">
-                Simulation
+                Behavioral
               </span>
 
               {/* Title */}
               <h3 className="text-2xl font-bold text-foreground mb-3">
-                Full Mock Interview
+                HR Interview
               </h3>
 
               {/* Description */}
               <p className="text-muted-foreground text-sm leading-relaxed flex-1 mb-8">
-                Experience realistic multi-round interviews with dynamic AI questions, voice interaction, and detailed feedback.
+                Practice 5 standard HR questions with continuous body language tracking, vocal analysis, and actionable AI feedback.
               </p>
 
               {/* CTA */}

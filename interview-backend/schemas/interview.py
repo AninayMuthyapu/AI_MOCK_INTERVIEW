@@ -7,6 +7,7 @@ from schemas.voice import SoftSkillsFeedback
 class InterviewAnswer(BaseModel):
     sessionId: str
     userAnswer: str
+    behaviorData: Optional[dict] = Field(default=None, description="Optional behavioral scores array/dict")
 
 
 # Question response types
